@@ -60,6 +60,13 @@
                 const rows = [];
                 snap.forEach(d => rows.push({ id: d.id, data: d.data() }));
 
+                // Sort by createdAt descending (newest first)
+                rows.sort((a, b) => {
+                  const timeA = a.data.createdAt?.toMillis?.() || 0;
+                  const timeB = b.data.createdAt?.toMillis?.() || 0;
+                  return timeB - timeA;
+                });
+
                 // render
                 reportsEl.innerHTML = rows.map(r => {
                     const data = r.data;

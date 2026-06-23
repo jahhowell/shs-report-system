@@ -333,26 +333,35 @@ document.getElementById('report-form').addEventListener('submit', async function
   setButtonLoading();
 
   try {
-    const photoUploads = [];
+    let photoUploads = [];
     
-    // Upload photos sequentially with timeout per file
-    for (const file of attachedFiles) {
-      const safeName = file.name.replace(/[^a-zA-Z0-9.-_]/g, '_');
-      const path = `reports/${Date.now()}_${Math.random().toString(36).slice(2)}/${safeName}`;
-      const storageRef = sref(storage, path);
+    // Upload photos in parallel with timeout, but don't block submission
+    if (attachedFiles.length > 0) {
+      const uploadWithTimeout = async (file) => {
+        try {
+          const safeName = file.name.replace(/[^a-zA-Z0-9.-_]/g, '_');
+          const path = `reports/${Date.now()}_${Math.random().toString(36).slice(2)}/${safeName}`;
+          const storageRef = sref(storage, path);
+          await uploadBytes(storageRef, file);
+          const url = await getDownloadURL(storageRef);
+          return { name: file.name, url };
+        } catch (e) {
+          console.warn('Photo failed:', e.message);
+          return null;
+        }
+      };
       
-      const uploadPromise = uploadBytes(storageRef, file);
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Photo upload timed out')), 45000);
+      // Upload all photos in parallel with a total timeout
+      const uploadPromise = Promise.all(
+        attachedFiles.map(file => uploadWithTimeout(file))
+      );
+      
+      const timeoutPromise = new Promise(resolve => {
+        setTimeout(() => resolve([]), 30000);
       });
       
-      try {
-        await Promise.race([uploadPromise, timeoutPromise]);
-        const url = await getDownloadURL(storageRef);
-        photoUploads.push({ name: file.name, url });
-      } catch (photoErr) {
-        console.error('Failed to upload photo:', photoErr.message);
-      }
+      const results = await Promise.race([uploadPromise, timeoutPromise]);
+      photoUploads = results.filter(r => r !== null && r !== undefined);
     }
 
     const docRef = await addDoc(collection(db, 'reports'), {
