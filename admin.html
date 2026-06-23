@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        body{ font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--surface); margin:0; }
+        .topbar{ background:var(--shs-navy); color:var(--card-bg); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; }
+        .topbar .brand{ font-weight:700; display:flex; align-items:center; gap:12px; }
+        .topbar .brand .logo{ width:36px; height:36px; background:var(--card-bg); color:var(--shs-navy); display:flex; align-items:center; justify-content:center; border-radius:8px; font-weight:700; }
+        .topbar .actions button{ background:transparent; color:var(--card-bg); border:1px solid rgba(255,255,255,0.16); padding:8px 12px; border-radius:8px; cursor:pointer; }
+        .container{ max-width:1100px; margin:28px auto; padding:0 20px; }
+        .header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
+        .card{ background:#fff; border-radius:12px; padding:16px; box-shadow:0 6px 18px rgba(20,30,60,0.06); }
+        .report-row{ display:grid; grid-template-columns: 1fr 220px; gap:12px; align-items:start; border-bottom:1px solid #f0f2f8; padding:12px 0; }
+        .report-meta{ font-size:14px; color:#333; }
+        .report-meta h3{ margin:0 0 6px; font-size:15px; }
+        .small{ font-size:13px; color:#666; }
+        .photo-thumb{ width:72px; height:72px; object-fit:cover; border-radius:8px; border:1px solid #e6e9f2; }
+        select.status{ width:100%; padding:8px; border-radius:8px; border:1px solid #e6e9f2; }
+        .signout{ background:#fff; color:#1a73e8; border-radius:8px; padding:8px 10px; border:none; cursor:pointer; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="brand"><div class="logo"><picture><source srcset="assets/crest.png" type="image/png"><img src="assets/crest.svg" alt="SHS crest" style="width:36px;height:36px;object-fit:cover;border-radius:6px;"/></picture></div><div>Sacred Heart School — Admin</div></div>
+        <div class="actions">
+            <button onclick="location.href='index.html'">View site</button>
+            <button class="signout" onclick="signOut()">Sign out</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1 style="margin:0">Reports</h1>
+            <div class="small">Auto-refresh: <span id="refresh-status">on</span></div>
+        </div>
+
+        <div class="card" id="reports-card">
+            <div id="reports">Loading reports…</div>
+        </div>
+    </div>
+
+    <script type="module">
+        if(localStorage.getItem('adminLoggedIn') !== 'true') location.href = 'admin-login.html';
+
+        import { db } from './firebase.js';
+        import { collection, getDocs, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        const reportsEl = document.getElementById('reports');
+
+        async function renderReports(){
+            reportsEl.innerHTML = 'Loading…';
+            try{
+                const snap = await getDocs(collection(db, 'reports'));
+                if(snap.empty){ reportsEl.innerHTML = '<div class="small">No reports yet.</div>'; return; }
+
+                const rows = [];
+                snap.forEach(d => rows.push({ id: d.id, data: d.data() }));
+
+                // render
+                reportsEl.innerHTML = rows.map(r => {
+                    const data = r.data;
+                    const shortId = r.id.slice(0,12).toUpperCase();
+                    const photo = (data.photos && data.photos[0] && (data.photos[0].url || data.photos[0].data)) ? `<img src="${data.photos[0].url || data.photos[0].data}" class="photo-thumb"/>` : '';
+                    return `
+                        <div class="report-row">
+                            <div>
+                                <div class="report-meta">
+                                    <h3>${escapeHtml(data.category || 'No category')} <span class="small">· ${shortId}</span></h3>
+                                    <div class="small"><strong>${escapeHtml(data.name || '')}</strong> — ${escapeHtml(data.location || '')}</div>
+                                    <div style="margin-top:8px">${escapeHtml(data.description || '')}</div>
+                                </div>
+                            </div>
+                            <div>
+                                ${photo}
+                                <div style="margin-top:8px">
+                                    <select class="status" onchange="updateStatus('${r.id}', this.value)">
+                                        <option ${data.status==='Pending' ? 'selected' : ''}>Pending</option>
+                                        <option ${data.status==='In Progress' ? 'selected' : ''}>In Progress</option>
+                                        <option ${data.status==='Resolved' ? 'selected' : ''}>Resolved</option>
+                                        <option ${data.status==='Rejected' ? 'selected' : ''}>Rejected</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch(err){
+                reportsEl.innerHTML = '<div class="small">Failed to load reports.</div>';
+                console.error(err);
+            }
+        }
+
+        window.updateStatus = async (id, status) => {
+            try{
+                await updateDoc(doc(db, 'reports', id), { status });
+                // briefly flash updated
+                await renderReports();
+            }catch(e){ alert('Failed to update status'); console.error(e); }
+        };
+
+        function escapeHtml(str){ return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'})[s]); }
+
+        function signOut(){ localStorage.removeItem('adminLoggedIn'); location.href = 'admin-login.html'; }
+
+        // initial load + auto-refresh every 12s
+        renderReports();
+        setInterval(renderReports, 12000);
+    </script>
+</body>
+</html>

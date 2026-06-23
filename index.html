@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SHS-AdC Facility Report System</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      max-width: 860px;
+      margin: -80px auto 0;
+      padding: 100px 20px 80px;
+      position: relative;
+      z-index: 2;
+    }
+    .feature-card {
+      background: rgba(7,41,77,0.15);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 24px 20px;
+      backdrop-filter: blur(6px);
+      color: rgba(255,255,255,0.90);
+    }
+    .feature-icon {
+      font-size: 28px; margin-bottom: 10px;
+    }
+    .feature-card h3 {
+      font-size: 15px; font-weight: 600;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+    .feature-card p {
+      font-size: 13px; color: rgba(255,255,255,0.80); line-height: 1.6;
+    }
+    .footer {
+      text-align: center;
+      padding: 40px 20px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.70);
+      background: rgba(7,41,77,0.25);
+      backdrop-filter: blur(8px);
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <picture>
+      <source srcset="assets/crest.png" type="image/png">
+      <img class="crest" src="assets/crest.svg" alt="SHS crest" />
+    </picture>
+    <div style="line-height:1; margin-left:8px">
+      <div style="font-weight:700">Sacred Heart School</div>
+      <div style="font-size:12px; color:var(--muted);">Ateneo de Cebu</div>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="active">Home</a>
+    <a href="report.html">Submit report</a>
+    <a href="track.html">Track report</a>
+    <a href="admin-login.html">Admin</a>
+  </div>
+</nav>
+
+<section class="hero-block">
+  <div class="hero">
+    <div class="hero-logo">
+      <picture>
+        <source srcset="assets/crest.png" type="image/png">
+        <img src="assets/crest.svg" alt="SHS crest">
+      </picture>
+    </div>
+    <h1>Facility Maintenance<br>Reporting System</h1>
+    <p>Sacred Heart School – Ateneo de Cebu. Report broken equipment, damaged furniture, and facility issues directly to the maintenance team.</p>
+    <div class="hero-btns">
+      <a href="report.html" class="btn btn-primary">Submit a report</a>
+      <a href="track.html" class="btn btn-outline">Track my report</a>
+    </div>
+  </div>
+
+  <div class="features">
+  <div class="feature-card">
+    <div class="feature-icon">📋</div>
+    <h3>Easy reporting</h3>
+    <p>Fill out a simple form to report any facility issue in your school.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">📍</div>
+    <h3>Track status</h3>
+    <p>Use your report ID to check if your concern has been resolved.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">⚡</div>
+    <h3>Fast response</h3>
+    <p>Admin is notified immediately and can update the status in real time.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">📸</div>
+    <h3>Attach photos</h3>
+    <p>Take a photo of the issue so maintenance knows exactly what to fix.</p>
+  </div>
+</div>
+
+<div class="footer">
+  &copy; 2026 Sacred Heart School – Ateneo de Cebu · Senior High School Department
+</div>
+
+</body>
+</html>

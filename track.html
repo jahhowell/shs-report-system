@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Report</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+    <a class="nav-logo" href="index.html">
+        <picture>
+            <source srcset="assets/crest.png" type="image/png">
+            <img class="crest" src="assets/crest.svg" alt="SHS crest" />
+        </picture>
+        <div style="line-height:1; margin-left:8px">
+            <div style="font-weight:700">Sacred Heart School</div>
+            <div style="font-size:12px; color:var(--muted);">Ateneo de Cebu</div>
+        </div>
+    </a>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="report.html">Submit report</a>
+        <a href="track.html" class="active">Track report</a>
+        <a href="admin-login.html">Admin</a>
+    </div>
+</nav>
+    <div class="page-wrap">
+        <h1>Track Report</h1>
+        
+        <div class="card">
+            <form id="track-form">
+                <div class="form-group">
+                    <label class="form-label">Report ID</label>
+                    <input
+                        id="reportId"
+                        placeholder="Example: 6A3F8D219B2C" />
+                </div>
+                
+                <button class="btn btn-primary" type="submit">
+                    Track
+                </button>
+            </form>
+            
+            <div id="result" style="margin-top:20px"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from "./firebase.js";
+        import {
+            collection,
+            getDocs
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const form = document.getElementById("track-form");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById("reportId").value.trim();
+            const result = document.getElementById("result");
+
+            result.innerHTML = "Searching...";
+
+            const snapshot = await getDocs(collection(db, "reports"));
+
+            let found = false;
+
+            snapshot.forEach(doc => {
+                if(doc.id.slice(0, 12).toUpperCase() === id.toUpperCase()) {
+                    const data = doc.data();
+
+                                        const statusClass = (s=>{
+                                            if(!s) return 'badge-pending';
+                                            const key = s.toLowerCase();
+                                            if(key.includes('progress')) return 'badge-progress';
+                                            if(key.includes('resolved')) return 'badge-resolved';
+                                            if(key.includes('reject')) return 'badge-rejected';
+                                            return 'badge-pending';
+                                        })(data.status);
+
+                                        result.innerHTML = `
+                                        <div class="card">
+                                                <h3>Report Found</h3>
+                                                <p><strong>Name:</strong> ${data.name}</p>
+                                                <p><strong>Location:</strong> ${data.location}</p>
+                                                <p><strong>Category:</strong> ${data.category}</p>
+                                                <p><strong>Status:</strong>
+                                                <span class="badge ${statusClass}">
+                                                ${data.status}
+                                                </span>
+                                                </p>
+                                        </div>
+                                        `;
+
+                    found = true;
+                }
+            });
+
+            if(!found) {
+                result.innerHTML = `
+                <div class="alert alert-error" style="display:block">
+                Report not found.
+                </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

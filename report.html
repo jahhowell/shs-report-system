@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submit Report – SHS-AdC</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .report-hero {
+      position: relative;
+      background-color: #07294d;
+      background-image: linear-gradient(rgba(7,41,77,0.78), rgba(7,41,77,0.92)), url('assets/hero.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: #fff;
+      padding: 80px 20px;
+      text-align: center;
+      min-height: 340px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .report-hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(7,41,77,0.40) 0%, rgba(7,41,77,0.70) 100%);
+      pointer-events: none;
+    }
+    .report-hero > * {
+      position: relative;
+      z-index: 1;
+    }
+    .report-hero h1 {
+      font-size: 36px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      text-shadow: 0 4px 20px rgba(2,10,24,0.5);
+    }
+    .report-hero p {
+      color: rgba(255,255,255,0.88);
+      max-width: 600px;
+      margin: 0 auto;
+      font-size: 14px;
+    }
+    .char-bar { font-size: 11px; color: #999; text-align: right; margin-top: 4px; }
+    .photo-zone {
+      border: 2px dashed #ddd; border-radius: 10px;
+      padding: 24px; text-align: center; cursor: pointer;
+      background: #fafafa; position: relative;
+      transition: background 0.15s;
+    }
+    .photo-zone:hover { background: #f0f4ff; border-color: #1a73e8; }
+    .photo-zone input[type=file] {
+      position: absolute; inset: 0; opacity: 0;
+      cursor: pointer; width: 100%; height: 100%;
+    }
+    .photo-zone .zone-icon { font-size: 30px; display: block; margin-bottom: 6px; }
+    .photo-zone p { font-size: 13px; color: #666; margin: 0; }
+    .photo-zone .hint { font-size: 11px; color: #999; margin-top: 4px; }
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 8px; margin-top: 10px;
+    }
+    .preview-item { position: relative; aspect-ratio: 1; }
+    .preview-item img {
+      width: 100%; height: 100%; object-fit: cover;
+      border-radius: 8px; border: 1px solid #e0e0e0;
+    }
+    .preview-item button {
+      position: absolute; top: 3px; right: 3px;
+      background: rgba(0,0,0,0.6); border: none;
+      border-radius: 50%; width: 20px; height: 20px;
+      color: #fff; font-size: 11px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .page-sub { font-size: 14px; color: #666; margin-bottom: 24px; }
+    .success-card {
+      text-align: center; padding: 40px 24px; display: none;
+    }
+    .success-icon { font-size: 48px; margin-bottom: 12px; }
+    .success-card h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .success-card p { color: #555; margin-bottom: 6px; }
+    .report-id-display {
+      font-family: monospace; font-size: 18px; font-weight: 700;
+      color: var(--shs-navy); background: #e8f0fe;
+      padding: 10px 20px; border-radius: 8px;
+      display: inline-block; margin: 12px 0;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <picture>
+      <source srcset="assets/crest.png" type="image/png">
+      <img class="crest" src="assets/crest.svg" alt="SHS crest" />
+    </picture>
+    <div style="line-height:1; margin-left:8px">
+      <div style="font-weight:700">Sacred Heart School</div>
+      <div style="font-size:12px; color:var(--muted);">Ateneo de Cebu</div>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="report.html" class="active">Submit report</a>
+    <a href="track.html">Track report</a>
+    <a href="admin-login.html">Admin</a>
+  </div>
+</nav>
+
+<div class="report-hero">
+  <h1>Submit a Facility Report</h1>
+  <p>Help us keep Sacred Heart School in perfect condition. Report any facility issues so our maintenance team can respond quickly.</p>
+</div>
+
+<div class="page-wrap">
+
+  <!-- Success screen (shown after submit) -->
+  <div class="card success-card" id="success-card">
+    <div class="success-icon">✅</div>
+    <h2>Report submitted!</h2>
+    <p>Your report has been sent to the maintenance team.</p>
+    <p>Save your Report ID to track its status:</p>
+    <div class="report-id-display" id="success-report-id"></div>
+    <p style="font-size:13px; color:#999; margin-top:8px;">Screenshot this so you don't lose it.</p>
+    <div style="margin-top:20px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <a href="track.html" class="btn btn-primary">Track this report</a>
+      <a href="report.html" class="btn btn-outline">Submit another</a>
+    </div>
+  </div>
+
+  <!-- Report form -->
+  <div id="form-section">
+    <div class="page-title">Submit a facility report</div>
+    <div class="page-sub">Sacred Heart School – Ateneo de Cebu</div>
+
+    <div class="card">
+      <div class="alert alert-error" id="error-box"></div>
+
+      <form id="report-form" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="studentId">Student ID <span class="req">*</span></label>
+            <input type="text" id="studentId" placeholder="Student ID" maxlength="20" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="name">Full name <span class="req">*</span></label>
+            <input type="text" id="name" placeholder="Your full name" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="location">Location <span class="req">*</span></label>
+            <select id="location">
+              <option value="">Select location</option>
+              <option>Classroom</option>
+              <option>Restroom</option>
+              <option>Library</option>
+              <option>Laboratory</option>
+              <option>Hallway</option>
+              <option>Canteen</option>
+              <option>Gymnasium</option>
+              <option>Office</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="category">Issue category <span class="req">*</span></label>
+            <select id="category">
+              <option value="">Select category</option>
+              <option>Broken Furniture</option>
+              <option>Electrical Issue</option>
+              <option>Plumbing</option>
+              <option>Lighting</option>
+              <option>Damaged Door/Window</option>
+              <option>Pest/Sanitation</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="description">Description <span class="req">*</span></label>
+          <textarea id="description" rows="4"
+            placeholder="Describe the issue in detail (minimum 50 characters)..."></textarea>
+          <div class="char-bar" id="char-counter">0 / 500</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Photo evidence
+            <span style="font-weight:400; color:#999;">(optional, max 3 photos)</span>
+          </label>
+          <div class="photo-zone" id="photo-zone">
+            <input type="file" id="photo-input" accept="image/jpeg,image/png,image/webp" multiple />
+            <span class="zone-icon">📷</span>
+            <p>Tap to attach photos</p>
+            <p class="hint">JPG, PNG or WEBP · max 5MB each · up to 3 photos</p>
+          </div>
+          <div class="preview-grid" id="preview-grid"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="submit-btn" style="width:100%; padding:12px; font-size:15px;">
+          Submit report
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { db, storage } from './firebase.js';
+import {
+  collection,
+  addDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  ref as sref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+const attachedFiles = [];
+
+// Character counter
+const descriptionField = document.getElementById('description');
+const charCounter = document.getElementById('char-counter');
+
+function updateCounter() {
+  const len = descriptionField.value.length;
+  charCounter.textContent = len + ' / 500';
+  charCounter.style.color = (len < 50 || len > 500) ? '#d93025' : '#999';
+}
+
+// Initialize and add listener
+updateCounter();
+descriptionField.addEventListener('input', updateCounter);
+
+// Photo upload
+document.getElementById('photo-input').addEventListener('change', function(e) {
+  const files = Array.from(e.target.files);
+  const grid = document.getElementById('preview-grid');
+  const zone = document.getElementById('photo-zone');
+
+  for (const file of files) {
+    if (attachedFiles.length >= 3) break;
+    if (!['image/jpeg','image/png','image/webp'].includes(file.type)) continue;
+    if (file.size > 5 * 1024 * 1024) continue;
+
+    const idx = attachedFiles.length;
+    attachedFiles.push(file);
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const item = document.createElement('div');
+      item.className = 'preview-item';
+      item.dataset.idx = idx;
+      item.innerHTML = `<img src="${ev.target.result}" alt="Preview ${idx+1}" />
+        <button type="button" aria-label="Remove">✕</button>`;
+      item.querySelector('button').addEventListener('click', () => {
+        attachedFiles.splice(parseInt(item.dataset.idx), 1);
+        item.remove();
+        document.querySelectorAll('.preview-item').forEach((el, i) => el.dataset.idx = i);
+        if (attachedFiles.length < 3) zone.style.display = '';
+      });
+      grid.appendChild(item);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  if (attachedFiles.length >= 3) zone.style.display = 'none';
+  this.value = '';
+});
+
+// Form submit
+document.getElementById('report-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const errBox = document.getElementById('error-box');
+  errBox.style.display = 'none';
+
+  const studentId   = document.getElementById('studentId').value.trim();
+  const name        = document.getElementById('name').value.trim();
+  const location    = document.getElementById('location').value;
+  const category    = document.getElementById('category').value;
+  const description = document.getElementById('description').value.trim();
+
+  const errors = [];
+  if (!studentId)          errors.push('Student ID is required.');
+  if (name.length < 2)     errors.push('Full name is required.');
+  if (/\d/.test(name))     errors.push('Full name must not contain numbers.');
+  if (!location)           errors.push('Please select a location.');
+  if (!category)           errors.push('Please select an issue category.');
+  if (description.length < 50)  errors.push('Description must be at least 50 characters.');
+  if (description.length > 500) errors.push('Description must not exceed 500 characters.');
+
+  if (errors.length) {
+    errBox.innerHTML = '<strong>Please fix the following:</strong><ul>' +
+      errors.map(err => `<li>${err}</li>`).join('') + '</ul>';
+    errBox.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Submitting…';
+
+    try {
+    // Upload photos to Firebase Storage and collect URLs
+    const photoUploads = await Promise.all(attachedFiles.map(async (file) => {
+      const path = `reports/${Date.now()}_${Math.random().toString(36).slice(2)}/${file.name}`;
+      const storageRef = sref(storage, path);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      return { name: file.name, url };
+    }));
+
+    // Save to Firestore
+    const docRef = await addDoc(collection(db, 'reports'), {
+      studentId,
+      name,
+      location,
+      category,
+      description,
+      photos: photoUploads,
+      status: 'Pending',
+      createdAt: serverTimestamp()
+    });
+
+    // Show success screen
+    document.getElementById('form-section').style.display = 'none';
+    document.getElementById('success-report-id').textContent = docRef.id.slice(0, 12).toUpperCase();
+    // Save full ID to localStorage so track page can use it
+    const saved = JSON.parse(localStorage.getItem('myReports') || '[]');
+    saved.push({ shortId: docRef.id.slice(0,12).toUpperCase(), fullId: docRef.id });
+    localStorage.setItem('myReports', JSON.stringify(saved));
+    document.getElementById('success-card').style.display = 'block';
+
+  } catch (err) {
+    errBox.textContent = 'Submission failed. Please check your connection and try again.';
+    errBox.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Submit report';
+  }
+});
+</script>
+
+</body>
+</html>
