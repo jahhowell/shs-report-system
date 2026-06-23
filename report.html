@@ -219,7 +219,9 @@ import { db, storage } from './firebase.js';
 import {
   collection,
   addDoc,
-  serverTimestamp
+  serverTimestamp,
+  updateDoc,
+  doc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   ref as sref,
@@ -333,44 +335,13 @@ document.getElementById('report-form').addEventListener('submit', async function
   setButtonLoading();
 
   try {
-    let photoUploads = [];
-    
-    // Upload photos in parallel with timeout, but don't block submission
-    if (attachedFiles.length > 0) {
-      const uploadWithTimeout = async (file) => {
-        try {
-          const safeName = file.name.replace(/[^a-zA-Z0-9.-_]/g, '_');
-          const path = `reports/${Date.now()}_${Math.random().toString(36).slice(2)}/${safeName}`;
-          const storageRef = sref(storage, path);
-          await uploadBytes(storageRef, file);
-          const url = await getDownloadURL(storageRef);
-          return { name: file.name, url };
-        } catch (e) {
-          console.warn('Photo failed:', e.message);
-          return null;
-        }
-      };
-      
-      // Upload all photos in parallel with a total timeout
-      const uploadPromise = Promise.all(
-        attachedFiles.map(file => uploadWithTimeout(file))
-      );
-      
-      const timeoutPromise = new Promise(resolve => {
-        setTimeout(() => resolve([]), 30000);
-      });
-      
-      const results = await Promise.race([uploadPromise, timeoutPromise]);
-      photoUploads = results.filter(r => r !== null && r !== undefined);
-    }
-
     const docRef = await addDoc(collection(db, 'reports'), {
       studentId,
       name,
       location,
       category,
       description,
-      photos: photoUploads,
+      photos: [],
       status: 'Pending',
       createdAt: serverTimestamp()
     });
@@ -381,6 +352,32 @@ document.getElementById('report-form').addEventListener('submit', async function
     saved.push({ shortId: docRef.id.slice(0,12).toUpperCase(), fullId: docRef.id });
     localStorage.setItem('myReports', JSON.stringify(saved));
     successCard.style.display = 'block';
+
+    // Upload photos in background (don't wait for them)
+    if (attachedFiles.length > 0) {
+      (async () => {
+        try {
+          const photoUploads = [];
+          for (const file of attachedFiles) {
+            try {
+              const safeName = file.name.replace(/[^a-zA-Z0-9.-_]/g, '_');
+              const path = `reports/${docRef.id}/${safeName}`;
+              const storageRef = sref(storage, path);
+              await uploadBytes(storageRef, file);
+              const url = await getDownloadURL(storageRef);
+              photoUploads.push({ name: file.name, url });
+            } catch (e) {
+              console.warn('Photo upload failed:', e.message);
+            }
+          }
+          if (photoUploads.length > 0) {
+            await updateDoc(doc(db, 'reports', docRef.id), { photos: photoUploads });
+          }
+        } catch (e) {
+          console.error('Background photo upload error:', e);
+        }
+      })();
+    }
   } catch (err) {
     errBox.innerHTML = '<strong>Submission failed.</strong> Please check your connection and try again.' +
       `<div style="margin-top:8px;font-size:13px;color:#5f6368;">${err?.message || 'Unexpected error.'}</div>`;
