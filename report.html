@@ -192,19 +192,7 @@
           <div class="char-bar" id="char-counter">0 / 500</div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">
-            Photo evidence
-            <span style="font-weight:400; color:#999;">(optional, max 3 photos)</span>
-          </label>
-          <div class="photo-zone" id="photo-zone">
-            <input type="file" id="photo-input" accept="image/jpeg,image/png,image/webp" multiple />
-            <span class="zone-icon">📷</span>
-            <p>Tap to attach photos</p>
-            <p class="hint">JPG, PNG or WEBP · max 5MB each · up to 3 photos</p>
-          </div>
-          <div class="preview-grid" id="preview-grid"></div>
-        </div>
+
 
         <button type="submit" class="btn btn-primary" id="submit-btn" style="width:100%; padding:12px; font-size:15px;">
           Submit report
@@ -215,21 +203,12 @@
 </div>
 
 <script type="module">
-import { db, storage } from './firebase.js';
+import { db } from './firebase.js';
 import {
   collection,
   addDoc,
-  serverTimestamp,
-  updateDoc,
-  doc
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import {
-  ref as sref,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-
-const attachedFiles = [];
 
 // Character counter
 const descriptionField = document.getElementById('description');
@@ -245,45 +224,10 @@ function updateCounter() {
 updateCounter();
 descriptionField.addEventListener('input', updateCounter);
 
-// Photo upload
-document.getElementById('photo-input').addEventListener('change', function(e) {
-  const files = Array.from(e.target.files);
-  const grid = document.getElementById('preview-grid');
-  const zone = document.getElementById('photo-zone');
-
-  for (const file of files) {
-    if (attachedFiles.length >= 3) break;
-    if (!['image/jpeg','image/png','image/webp'].includes(file.type)) continue;
-    if (file.size > 5 * 1024 * 1024) continue;
-
-    const idx = attachedFiles.length;
-    attachedFiles.push(file);
-
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const item = document.createElement('div');
-      item.className = 'preview-item';
-      item.dataset.idx = idx;
-      item.innerHTML = `<img src="${ev.target.result}" alt="Preview ${idx+1}" />
-        <button type="button" aria-label="Remove">✕</button>`;
-      item.querySelector('button').addEventListener('click', () => {
-        attachedFiles.splice(parseInt(item.dataset.idx), 1);
-        item.remove();
-        document.querySelectorAll('.preview-item').forEach((el, i) => el.dataset.idx = i);
-        if (attachedFiles.length < 3) zone.style.display = '';
-      });
-      grid.appendChild(item);
-    };
-    reader.readAsDataURL(file);
-  }
-
-  if (attachedFiles.length >= 3) zone.style.display = 'none';
-  this.value = '';
-});
-
 // Form submit
 document.getElementById('report-form').addEventListener('submit', async function(e) {
   e.preventDefault();
+  console.log('Form submitted');
   const errBox = document.getElementById('error-box');
   errBox.style.display = 'none';
 
@@ -303,6 +247,7 @@ document.getElementById('report-form').addEventListener('submit', async function
   if (description.length > 500) errors.push('Description must not exceed 500 characters.');
 
   if (errors.length) {
+    console.log('Validation errors:', errors);
     errBox.innerHTML = '<strong>Please fix the following:</strong><ul>' +
       errors.map(err => `<li>${err}</li>`).join('') + '</ul>';
     errBox.style.display = 'block';
@@ -310,6 +255,7 @@ document.getElementById('report-form').addEventListener('submit', async function
   }
 
   if (!navigator.onLine) {
+    console.log('Offline');
     errBox.innerHTML = '<strong>You appear to be offline.</strong> Please reconnect and try again.';
     errBox.style.display = 'block';
     return;
@@ -333,6 +279,7 @@ document.getElementById('report-form').addEventListener('submit', async function
   };
 
   setButtonLoading();
+  console.log('Button set to loading state');
 
   try {
     const docRef = await addDoc(collection(db, 'reports'), {
@@ -341,7 +288,6 @@ document.getElementById('report-form').addEventListener('submit', async function
       location,
       category,
       description,
-      photos: [],
       status: 'Pending',
       createdAt: serverTimestamp()
     });
@@ -352,35 +298,9 @@ document.getElementById('report-form').addEventListener('submit', async function
     saved.push({ shortId: docRef.id.slice(0,12).toUpperCase(), fullId: docRef.id });
     localStorage.setItem('myReports', JSON.stringify(saved));
     successCard.style.display = 'block';
-
-    // Upload photos in background (don't wait for them)
-    if (attachedFiles.length > 0) {
-      (async () => {
-        try {
-          const photoUploads = [];
-          for (const file of attachedFiles) {
-            try {
-              const safeName = file.name.replace(/[^a-zA-Z0-9.-_]/g, '_');
-              const path = `reports/${docRef.id}/${safeName}`;
-              const storageRef = sref(storage, path);
-              await uploadBytes(storageRef, file);
-              const url = await getDownloadURL(storageRef);
-              photoUploads.push({ name: file.name, url });
-            } catch (e) {
-              console.warn('Photo upload failed:', e.message);
-            }
-          }
-          if (photoUploads.length > 0) {
-            await updateDoc(doc(db, 'reports', docRef.id), { photos: photoUploads });
-          }
-        } catch (e) {
-          console.error('Background photo upload error:', e);
-        }
-      })();
-    }
   } catch (err) {
-    errBox.innerHTML = '<strong>Submission failed.</strong> Please check your connection and try again.' +
-      `<div style="margin-top:8px;font-size:13px;color:#5f6368;">${err?.message || 'Unexpected error.'}</div>`;
+    console.error('ERROR:', err);
+    errBox.innerHTML = '<strong>Submission failed.</strong> ' + (err?.message || 'Please try again.');
     errBox.style.display = 'block';
     resetButton();
   }
