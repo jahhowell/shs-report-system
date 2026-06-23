@@ -332,12 +332,21 @@ document.getElementById('report-form').addEventListener('submit', async function
 
   setButtonLoading();
 
+  const uploadFileWithTimeout = async (storageRef, file, timeoutMs = 60000) => {
+    const uploadPromise = uploadBytes(storageRef, file);
+    const timeoutPromise = new Promise((_, reject) => {
+      const id = setTimeout(() => reject(new Error('Photo upload timed out. Try a smaller image or better connection.')), timeoutMs);
+      uploadPromise.finally(() => clearTimeout(id));
+    });
+    await Promise.race([uploadPromise, timeoutPromise]);
+  };
+
   try {
     const photoUploads = await Promise.all(attachedFiles.map(async (file) => {
       const safeName = file.name.replace(/[^a-zA-Z0-9.-_]/g, '_');
       const path = `reports/${Date.now()}_${Math.random().toString(36).slice(2)}/${safeName}`;
       const storageRef = sref(storage, path);
-      await uploadBytes(storageRef, file);
+      await uploadFileWithTimeout(storageRef, file);
       const url = await getDownloadURL(storageRef);
       return { name: file.name, url };
     }));
