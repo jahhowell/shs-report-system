@@ -307,21 +307,41 @@ document.getElementById('report-form').addEventListener('submit', async function
     return;
   }
 
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Submitting…';
+  if (!navigator.onLine) {
+    errBox.innerHTML = '<strong>You appear to be offline.</strong> Please reconnect and try again.';
+    errBox.style.display = 'block';
+    return;
+  }
 
-    try {
-    // Upload photos to Firebase Storage and collect URLs
+  const btn = document.getElementById('submit-btn');
+  const formSection = document.getElementById('form-section');
+  const successCard = document.getElementById('success-card');
+  const successReportId = document.getElementById('success-report-id');
+
+  const setButtonLoading = () => {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Submitting…';
+    btn.setAttribute('aria-busy', 'true');
+  };
+
+  const resetButton = () => {
+    btn.disabled = false;
+    btn.removeAttribute('aria-busy');
+    btn.textContent = 'Submit report';
+  };
+
+  setButtonLoading();
+
+  try {
     const photoUploads = await Promise.all(attachedFiles.map(async (file) => {
-      const path = `reports/${Date.now()}_${Math.random().toString(36).slice(2)}/${file.name}`;
+      const safeName = file.name.replace(/[^a-zA-Z0-9.-_]/g, '_');
+      const path = `reports/${Date.now()}_${Math.random().toString(36).slice(2)}/${safeName}`;
       const storageRef = sref(storage, path);
       await uploadBytes(storageRef, file);
       const url = await getDownloadURL(storageRef);
       return { name: file.name, url };
     }));
 
-    // Save to Firestore
     const docRef = await addDoc(collection(db, 'reports'), {
       studentId,
       name,
@@ -333,20 +353,17 @@ document.getElementById('report-form').addEventListener('submit', async function
       createdAt: serverTimestamp()
     });
 
-    // Show success screen
-    document.getElementById('form-section').style.display = 'none';
-    document.getElementById('success-report-id').textContent = docRef.id.slice(0, 12).toUpperCase();
-    // Save full ID to localStorage so track page can use it
+    formSection.style.display = 'none';
+    successReportId.textContent = docRef.id.slice(0, 12).toUpperCase();
     const saved = JSON.parse(localStorage.getItem('myReports') || '[]');
     saved.push({ shortId: docRef.id.slice(0,12).toUpperCase(), fullId: docRef.id });
     localStorage.setItem('myReports', JSON.stringify(saved));
-    document.getElementById('success-card').style.display = 'block';
-
+    successCard.style.display = 'block';
   } catch (err) {
-    errBox.textContent = 'Submission failed. Please check your connection and try again.';
+    errBox.innerHTML = '<strong>Submission failed.</strong> Please check your connection and try again.' +
+      `<div style="margin-top:8px;font-size:13px;color:#5f6368;">${err?.message || 'Unexpected error.'}</div>`;
     errBox.style.display = 'block';
-    btn.disabled = false;
-    btn.textContent = 'Submit report';
+    resetButton();
   }
 });
 </script>
