@@ -82,8 +82,17 @@
                         <div class="report-row">
                             <div>
                                 <div class="report-meta">
-                                    <h3>${escapeHtml(data.category || 'No category')} <span class="small">· ${shortId}</span></<div class="small"><strong>${escapeHtml(data.name || '')}</strong> — ${escapeHtml(data.location || '')}</div>
+                                    <h3>${escapeHtml(data.category || 'No category')} <span class="small">· ${shortId}</span></<div class="small">
+    <strong>Student ID:</strong> ${escapeHtml(data.studentId || 'N/A')}
+</div>
 
+<div class="small" style="margin-top:4px;">
+    <strong>Student Name:</strong> ${escapeHtml(data.name || 'N/A')}
+</div>
+
+<div class="small" style="margin-top:4px;">
+    <strong>Location:</strong> ${escapeHtml(data.location || 'N/A')}
+</div>
 <div class="small" style="margin-top:4px;">
     Student ID: <strong>${escapeHtml(data.studentId || 'N/A')}</strong>
 </div>
