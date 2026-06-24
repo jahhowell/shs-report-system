@@ -106,9 +106,18 @@ nav {
 }
 
 .btn-outline {
-  background: transparent;
-  border: 1px solid var(--shs-navy);
-  color: var(--shs-navy);
+  background: #f0c808;
+  border: 2px solid #f0c808;
+  color: #07294d;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(240, 200, 8, 0.35);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: #ffd84d;
+  border-color: #ffd84d;
+  color: #07294d;
+  box-shadow: 0 10px 24px rgba(240, 200, 8, 0.45);
 }
 
 .btn-dark {
