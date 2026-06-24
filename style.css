@@ -101,8 +101,17 @@ nav {
 }
 
 .btn-primary {
-  background: var(--shs-navy);
+  background: #07294d;
   color: #fff;
+  font-weight: 700;
+  border: 2px solid #07294d;
+  box-shadow: 0 8px 22px rgba(7, 41, 77, 0.30);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #0a3b6d;
+  border-color: #0a3b6d;
+  box-shadow: 0 12px 28px rgba(7, 41, 77, 0.40);
 }
 
 .btn-outline {
