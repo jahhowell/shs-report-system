@@ -82,22 +82,28 @@
                         <div class="report-row">
                             <div>
                                 <div class="report-meta">
-                                    <h3>${escapeHtml(data.category || 'No category')} <span class="small">· ${shortId}</span></<div class="small">
-    <strong>Student ID:</strong> ${escapeHtml(data.studentId || 'N/A')}
+                                    <h3>${escapeHtml(data.category || 'No category')}</h3>
+
+<div class="small" style="margin-top:4px;">
+<strong>Report ID:</strong> ${shortId}
 </div>
 
 <div class="small" style="margin-top:4px;">
-    <strong>Student Name:</strong> ${escapeHtml(data.name || 'N/A')}
+<strong>Student ID:</strong> ${escapeHtml(data.studentId || 'N/A')}
 </div>
 
 <div class="small" style="margin-top:4px;">
-    <strong>Location:</strong> ${escapeHtml(data.location || 'N/A')}
-</div>
-<div class="small" style="margin-top:4px;">
-    Student ID: <strong>${escapeHtml(data.studentId || 'N/A')}</strong>
+<strong>Student Name:</strong> ${escapeHtml(data.name || 'N/A')}
 </div>
 
-<div style="margin-top:8px">${escapeHtml(data.description || '')}</div>
+<div class="small" style="margin-top:4px;">
+<strong>Location:</strong> ${escapeHtml(data.location || 'N/A')}
+</div>
+
+<div style="margin-top:8px">
+<strong>Problem:</strong><br>
+${escapeHtml(data.description || 'No description')}
+</div>
                                 </div>
                             </div>
                             <div>
@@ -113,7 +119,7 @@
                                 <button
                                     class="delete-btn"
                                     onclick="deleteReport('${r.id}')"
-                                    style="width:100%;margin-top:8px;background:#dc2626;color:white;border:none;border-radius:8px;padding:8px;cursor:pointer;">
+                                    style="margin-top:8px;background:#dc2626;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:13px;cursor:pointer;width:auto;">
                                     Delete Report
                                 </button>
                             </div>
