@@ -91,7 +91,22 @@
                                                 ${data.status}
                                                 </span>
                                                 </p>
-                                        </div>
+
+<h4 style="margin-top:20px">Progress History</h4>
+${(data.history || []).map(h =>
+`<div style="margin-top:8px">
+<strong>${h.status}</strong><br>
+<span style="font-size:13px;color:#64748b">${h.time}</span>
+</div>`).join('')}
+
+<h4 style="margin-top:20px">Resolution Details</h4>
+<p>${data.resolution || 'No resolution details available yet.'}</p>
+
+<button class="btn btn-outline" onclick="location.reload()">
+Search Another Report
+</button>
+
+</div>
                                         `;
 
                     found = true;

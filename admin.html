@@ -53,7 +53,7 @@
         if(localStorage.getItem('adminLoggedIn') !== 'true') location.href = 'admin-login.html';
 
         import { db } from './firebase.js';
-        import { collection, getDocs, doc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+        import { collection, getDocs, doc, updateDoc, deleteDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         const reportsEl = document.getElementById('reports');
 
@@ -82,28 +82,22 @@
                         <div class="report-row">
                             <div>
                                 <div class="report-meta">
-                                    <h3>${escapeHtml(data.category || 'No category')}</h3>
-
-<div class="small" style="margin-top:4px;">
-<strong>Report ID:</strong> ${shortId}
+                                    <h3>${escapeHtml(data.category || 'No category')} <span class="small">· ${shortId}</span></<div class="small">
+    <strong>Student ID:</strong> ${escapeHtml(data.studentId || 'N/A')}
 </div>
 
 <div class="small" style="margin-top:4px;">
-<strong>Student ID:</strong> ${escapeHtml(data.studentId || 'N/A')}
+    <strong>Student Name:</strong> ${escapeHtml(data.name || 'N/A')}
 </div>
 
 <div class="small" style="margin-top:4px;">
-<strong>Student Name:</strong> ${escapeHtml(data.name || 'N/A')}
+    <strong>Location:</strong> ${escapeHtml(data.location || 'N/A')}
 </div>
-
 <div class="small" style="margin-top:4px;">
-<strong>Location:</strong> ${escapeHtml(data.location || 'N/A')}
+    Student ID: <strong>${escapeHtml(data.studentId || 'N/A')}</strong>
 </div>
 
-<div style="margin-top:8px">
-<strong>Problem:</strong><br>
-${escapeHtml(data.description || 'No description')}
-</div>
+<div style="margin-top:8px">${escapeHtml(data.description || '')}</div>
                                 </div>
                             </div>
                             <div>
@@ -119,7 +113,7 @@ ${escapeHtml(data.description || 'No description')}
                                 <button
                                     class="delete-btn"
                                     onclick="deleteReport('${r.id}')"
-                                    style="margin-top:8px;background:#dc2626;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:13px;cursor:pointer;width:auto;">
+                                    style="width:100%;margin-top:8px;background:#dc2626;color:white;border:none;border-radius:8px;padding:8px;cursor:pointer;">
                                     Delete Report
                                 </button>
                             </div>
@@ -135,8 +129,13 @@ ${escapeHtml(data.description || 'No description')}
 
         window.updateStatus = async (id, status) => {
             try{
-                await updateDoc(doc(db, 'reports', id), { status });
-                // briefly flash updated
+                await updateDoc(doc(db, 'reports', id), {
+                    status,
+                    history: arrayUnion({
+                        status: status,
+                        time: new Date().toLocaleString()
+                    })
+                });
                 await renderReports();
             }catch(e){ alert('Failed to update status'); console.error(e); }
         };
