@@ -15,6 +15,12 @@
         .header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
         .card{ background:#fff; border-radius:12px; padding:16px; box-shadow:0 6px 18px rgba(20,30,60,0.06); }
         .report-row{ display:grid; grid-template-columns: 1fr 220px; gap:12px; align-items:start; border-bottom:1px solid #f0f2f8; padding:12px 0; }
+        @media (max-width:768px){
+        .report-row{grid-template-columns:1fr;}
+        .report-row > div:last-child{margin-top:10px;}
+        select.status{width:100%;}
+        .photo-thumb{width:100%;max-width:200px;height:auto;}
+        }
         .report-meta{ font-size:14px; color:#333; }
         .report-meta h3{ margin:0 0 6px; font-size:15px; }
         .small{ font-size:13px; color:#666; }
@@ -47,7 +53,7 @@
         if(localStorage.getItem('adminLoggedIn') !== 'true') location.href = 'admin-login.html';
 
         import { db } from './firebase.js';
-        import { collection, getDocs, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+        import { collection, getDocs, doc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         const reportsEl = document.getElementById('reports');
 
@@ -91,6 +97,12 @@
                                         <option ${data.status==='Rejected' ? 'selected' : ''}>Rejected</option>
                                     </select>
                                 </div>
+                                <button
+                                    class="delete-btn"
+                                    onclick="deleteReport('${r.id}')"
+                                    style="width:100%;margin-top:8px;background:#dc2626;color:white;border:none;border-radius:8px;padding:8px;cursor:pointer;">
+                                    Delete Report
+                                </button>
                             </div>
                         </div>
                     `;
@@ -109,6 +121,19 @@
                 await renderReports();
             }catch(e){ alert('Failed to update status'); console.error(e); }
         };
+
+        
+        window.deleteReport = async (id) => {
+            if (!confirm('Delete this report permanently?')) return;
+            try{
+                await deleteDoc(doc(db, 'reports', id));
+                await renderReports();
+            }catch(e){
+                alert('Failed to delete report');
+                console.error(e);
+            }
+        };
+
 
         function escapeHtml(str){ return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'})[s]); }
 
