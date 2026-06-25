@@ -69,6 +69,12 @@
   font-weight:bold;
 }
 
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.stat-card{background:#fff;padding:16px;border-radius:12px;text-align:center;box-shadow:0 6px 18px rgba(20,30,60,.06)}
+.stat-num{font-size:28px;font-weight:700;color:#07294d}
+.stat-label{font-size:13px;color:#64748b}
+
 </style>
 </head>
 <body>
@@ -92,7 +98,27 @@
 </div>
         </div>
 
-        <div class="card" id="reports-card">
+        
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-num" id="totalCount">0</div><div class="stat-label">Total Reports</div></div>
+  <div class="stat-card"><div class="stat-num" id="pendingCount">0</div><div class="stat-label">Pending</div></div>
+  <div class="stat-card"><div class="stat-num" id="progressCount">0</div><div class="stat-label">In Progress</div></div>
+  <div class="stat-card"><div class="stat-num" id="resolvedCount">0</div><div class="stat-label">Resolved</div></div>
+  <div class="stat-card"><div class="stat-num" id="rejectedCount">0</div><div class="stat-label">Rejected</div></div>
+</div>
+
+<div class="card" style="margin-bottom:16px;">
+<input id="searchBox" placeholder="Search report ID, student ID, name, location..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;margin-bottom:10px;">
+<select id="statusFilter" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;">
+<option value="All">All Statuses</option>
+<option value="Pending">Pending</option>
+<option value="In Progress">In Progress</option>
+<option value="Resolved">Resolved</option>
+<option value="Rejected">Rejected</option>
+</select>
+</div>
+
+<div class="card" id="reports-card">
             <div id="reports">Loading reports…</div>
         </div>
     </div>
@@ -104,6 +130,7 @@
         import { collection, getDocs, doc, updateDoc, deleteDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         const reportsEl = document.getElementById('reports');
+let allRows = [];
 
         async function renderReports(){
             reportsEl.innerHTML = 'Loading…';
@@ -121,7 +148,30 @@
                   return timeB - timeA;
                 });
 
-                // render
+                
+allRows = rows;
+
+document.getElementById('totalCount').textContent = rows.length;
+document.getElementById('pendingCount').textContent = rows.filter(r=>r.data.status==='Pending').length;
+document.getElementById('progressCount').textContent = rows.filter(r=>r.data.status==='In Progress').length;
+document.getElementById('resolvedCount').textContent = rows.filter(r=>r.data.status==='Resolved').length;
+document.getElementById('rejectedCount').textContent = rows.filter(r=>r.data.status==='Rejected').length;
+
+const searchTerm=(document.getElementById('searchBox')?.value||'').toLowerCase();
+const statusFilter=(document.getElementById('statusFilter')?.value||'All');
+
+const filteredRows=rows.filter(r=>{
+ const d=r.data;
+ const txt=(r.id+' '+(d.studentId||'')+' '+(d.name||'')+' '+(d.location||'')).toLowerCase();
+ const searchMatch=txt.includes(searchTerm);
+ const statusMatch=statusFilter==='All'||d.status===statusFilter;
+ return searchMatch && statusMatch;
+});
+
+rows.length=0;
+rows.push(...filteredRows);
+
+// render
                 reportsEl.innerHTML = rows.map(r => {
                     const data = r.data;
                     const shortId = r.id.slice(0,12).toUpperCase();
@@ -270,8 +320,17 @@ document.addEventListener('click', e => {
           }
         });
 
-        renderReports();
-        startAutoRefresh();
+        
+document.addEventListener('input',e=>{
+ if(e.target.id==='searchBox') renderReports();
+});
+document.addEventListener('change',e=>{
+ if(e.target.id==='statusFilter') renderReports();
+});
+
+renderReports();
+startAutoRefresh();
+
 
     </script>
 
