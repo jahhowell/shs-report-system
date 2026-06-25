@@ -83,7 +83,13 @@
     <div class="container">
         <div class="header">
             <h1 style="margin:0">Reports</h1>
-            <div class="small">Auto-refresh: <span id="refresh-status">on</span></div>
+            <div class="small">
+    Auto-refresh:
+    <label style="display:inline-flex;align-items:center;gap:6px;">
+      <input type="checkbox" id="refresh-toggle" checked>
+      <span id="refresh-status">on</span>
+    </label>
+</div>
         </div>
 
         <div class="card" id="reports-card">
@@ -203,7 +209,11 @@ ${escapeHtml(data.description || 'No description')}
 
         function escapeHtml(str){ return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'})[s]); }
 
-        function signOut(){ localStorage.removeItem('adminLoggedIn'); location.href = 'admin-login.html'; }
+        window.signOut = function(){
+            localStorage.removeItem('adminLoggedIn');
+            sessionStorage.clear();
+            location.replace('admin-login.html');
+        }
 
         
 let zoomLevel = 1;
@@ -235,9 +245,34 @@ document.addEventListener('click', e => {
 });
 
 
-        // initial load + auto-refresh every 12s
+        
+        let refreshTimer = null;
+
+        function startAutoRefresh(){
+          if(refreshTimer) clearInterval(refreshTimer);
+          refreshTimer = setInterval(renderReports,12000);
+          document.getElementById('refresh-status').textContent='on';
+        }
+
+        function stopAutoRefresh(){
+          if(refreshTimer) clearInterval(refreshTimer);
+          refreshTimer = null;
+          document.getElementById('refresh-status').textContent='off';
+        }
+
+        const refreshToggle = document.getElementById('refresh-toggle');
+
+        refreshToggle.addEventListener('change',()=>{
+          if(refreshToggle.checked){
+            startAutoRefresh();
+          }else{
+            stopAutoRefresh();
+          }
+        });
+
         renderReports();
-        setInterval(renderReports, 12000);
+        startAutoRefresh();
+
     </script>
 
 <div class="image-modal" id="imageModal">
