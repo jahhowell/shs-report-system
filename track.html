@@ -93,4 +93,74 @@
                                             const key = s.toLowerCase();
                                             if(key.includes('progress')) return 'badge-progress';
                                             if(key.includes('resolved')) return 'badge-resolved';
-                                            if(key.
+                                            if(key.includes('reject')) return 'badge-rejected';
+                                            return 'badge-pending';
+                                        })(data.status);
+
+                                        result.innerHTML = `
+                                        <div class="card">
+                                                <h3>Report Found</h3>
+                                                <p><strong>Name:</strong> ${data.name}</p>
+                                                <p><strong>Location:</strong> ${data.location}</p>
+                                                <p><strong>Category:</strong> ${data.category}</p>
+                                                <p><strong>Status:</strong>
+                                                <span class="badge ${statusClass}">
+                                                ${data.status}
+                                                </span>
+                                                </p>
+
+
+<div class="info-grid">
+<div class="info-box"><strong>Status</strong><br>${data.status}</div>
+<div class="info-box"><strong>Location</strong><br>${data.location}</div>
+<div class="info-box"><strong>Category</strong><br>${data.category}</div>
+<div class="info-box"><strong>Submitted</strong><br>${data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString() : 'Unknown'}</div>
+</div>
+
+<h4>Progress Timeline</h4>
+<div class="timeline">
+${(data.history || []).map(h =>
+`<div class="timeline-item">
+<strong>${h.status}</strong><br>
+<span style="font-size:13px;color:#64748b">${h.time}</span>
+</div>`).join('')}
+</div>
+
+<h4 style="margin-top:20px">Resolution Notes</h4>
+<p>${data.resolution || 'No resolution details available yet.'}</p>
+
+${data.photos?.length ? `
+<h4 style="margin-top:20px">Photos</h4>
+<div class="photo-grid">
+${data.photos.map(p=>`<img src="${p.url || p.data || p}">`).join('')}
+</div>` : ''}
+
+<button class="btn btn-outline copy-btn"
+onclick="navigator.clipboard.writeText('${id}')">
+Copy Report ID
+</button>
+
+<button class="btn btn-outline"
+onclick="location.reload()">
+Search Another Report
+</button>
+
+
+</div>
+                                        `;
+
+                    found = true;
+                }
+            });
+
+            if(!found) {
+                result.innerHTML = `
+                <div class="alert alert-error" style="display:block">
+                Report not found.
+                </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

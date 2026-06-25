@@ -14,7 +14,7 @@
         .container{ max-width:1100px; margin:28px auto; padding:0 20px; }
         .header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
         .card{ background:#fff; border-radius:12px; padding:16px; box-shadow:0 6px 18px rgba(20,30,60,0.06); }
-        .report-row{ display:grid; grid-template-columns: 1fr 240px; gap:16px; align-items:start; border-bottom:1px solid #f0f2f8; padding:16px 0; }
+        .report-row{ display:grid; grid-template-columns: 1fr 220px; gap:12px; align-items:start; border-bottom:1px solid #f0f2f8; padding:12px 0; }
         @media (max-width:768px){
         .report-row{grid-template-columns:1fr;}
         .report-row > div:last-child{margin-top:10px;}
@@ -38,17 +38,9 @@
   z-index:9999;
 }
 .image-modal.active{display:flex;}
-.modal-img-wrap{
-  overflow: auto;
-  max-width: 90vw;
-  max-height: 80vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 .modal-img{
-  max-width:100%;
-  max-height:100%;
+  max-width:90vw;
+  max-height:90vh;
   object-fit:contain;
   transform:scale(1);
   transition:transform .15s ease;
@@ -60,14 +52,12 @@
   color:white;
   font-size:32px;
   cursor:pointer;
-  z-index: 10000;
 }
 .zoom-controls{
   position:absolute;
   bottom:25px;
   display:flex;
   gap:10px;
-  z-index: 10000;
 }
 .zoom-controls button{
   width:45px;
@@ -77,9 +67,14 @@
   cursor:pointer;
   font-size:20px;
   font-weight:bold;
-  background: #fff;
-  color: #333;
 }
+
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.stat-card{background:#fff;padding:16px;border-radius:12px;text-align:center;box-shadow:0 6px 18px rgba(20,30,60,.06)}
+.stat-num{font-size:28px;font-weight:700;color:#07294d}
+.stat-label{font-size:13px;color:#64748b}
+
 </style>
 </head>
 <body>
@@ -135,13 +130,10 @@
         import { collection, getDocs, doc, updateDoc, deleteDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         const reportsEl = document.getElementById('reports');
-        let allRows = [];
+let allRows = [];
 
         async function renderReports(){
-            // Save currently focused textarea ID to restore focus after rendering
-            const activeElId = document.activeElement ? document.activeElement.id : null;
-            const activeSelectionStart = document.activeElement ? document.activeElement.selectionStart : null;
-
+            reportsEl.innerHTML = 'Loading…';
             try{
                 const snap = await getDocs(collection(db, 'reports'));
                 if(snap.empty){ reportsEl.innerHTML = '<div class="small">No reports yet.</div>'; return; }
@@ -149,34 +141,37 @@
                 const rows = [];
                 snap.forEach(d => rows.push({ id: d.id, data: d.data() }));
 
+                // Sort by createdAt descending (newest first)
                 rows.sort((a, b) => {
                   const timeA = a.data.createdAt?.toMillis?.() || 0;
                   const timeB = b.data.createdAt?.toMillis?.() || 0;
                   return timeB - timeA;
                 });
 
-                allRows = rows;
+                
+allRows = rows;
 
-                document.getElementById('totalCount').textContent = rows.length;
-                document.getElementById('pendingCount').textContent = rows.filter(r=>r.data.status==='Pending').length;
-                document.getElementById('progressCount').textContent = rows.filter(r=>r.data.status==='In Progress').length;
-                document.getElementById('resolvedCount').textContent = rows.filter(r=>r.data.status==='Resolved').length;
-                document.getElementById('rejectedCount').textContent = rows.filter(r=>r.data.status==='Rejected').length;
+document.getElementById('totalCount').textContent = rows.length;
+document.getElementById('pendingCount').textContent = rows.filter(r=>r.data.status==='Pending').length;
+document.getElementById('progressCount').textContent = rows.filter(r=>r.data.status==='In Progress').length;
+document.getElementById('resolvedCount').textContent = rows.filter(r=>r.data.status==='Resolved').length;
+document.getElementById('rejectedCount').textContent = rows.filter(r=>r.data.status==='Rejected').length;
 
-                const searchTerm=(document.getElementById('searchBox')?.value||'').toLowerCase();
-                const statusFilter=(document.getElementById('statusFilter')?.value||'All');
+const searchTerm=(document.getElementById('searchBox')?.value||'').toLowerCase();
+const statusFilter=(document.getElementById('statusFilter')?.value||'All');
 
-                const filteredRows=rows.filter(r=>{
-                 const d=r.data;
-                 const txt=(r.id+' '+(d.studentId||'')+' '+(d.name||'')+' '+(d.location||'')).toLowerCase();
-                 const searchMatch=txt.includes(searchTerm);
-                 const statusMatch=statusFilter==='All'||d.status===statusFilter;
-                 return searchMatch && statusMatch;
-                });
+const filteredRows=rows.filter(r=>{
+ const d=r.data;
+ const txt=(r.id+' '+(d.studentId||'')+' '+(d.name||'')+' '+(d.location||'')).toLowerCase();
+ const searchMatch=txt.includes(searchTerm);
+ const statusMatch=statusFilter==='All'||d.status===statusFilter;
+ return searchMatch && statusMatch;
+});
 
-                rows.length=0;
-                rows.push(...filteredRows);
+rows.length=0;
+rows.push(...filteredRows);
 
+// render
                 reportsEl.innerHTML = rows.map(r => {
                     const data = r.data;
                     const shortId = r.id.slice(0,12).toUpperCase();
@@ -187,47 +182,42 @@
                                 <div class="report-meta">
                                     <h3>${escapeHtml(data.category || 'No category')}</h3>
 
-                                    <div class="small" style="margin-top:4px;">
-                                    <strong>Report ID:</strong> ${shortId}
-                                    </div>
+<div class="small" style="margin-top:4px;">
+<strong>Report ID:</strong> ${shortId}
+</div>
 
-                                    <div class="small" style="margin-top:4px;">
-                                    <strong>Student ID:</strong> ${escapeHtml(data.studentId || 'N/A')}
-                                    </div>
+<div class="small" style="margin-top:4px;">
+<strong>Student ID:</strong> ${escapeHtml(data.studentId || 'N/A')}
+</div>
 
-                                    <div class="small" style="margin-top:4px;">
-                                    <strong>Student Name:</strong> ${escapeHtml(data.name || 'N/A')}
-                                    </div>
+<div class="small" style="margin-top:4px;">
+<strong>Student Name:</strong> ${escapeHtml(data.name || 'N/A')}
+</div>
 
-                                    <div class="small" style="margin-top:4px;">
-                                    <strong>Location:</strong> ${escapeHtml(data.location || 'N/A')}
-                                    </div>
+<div class="small" style="margin-top:4px;">
+<strong>Location:</strong> ${escapeHtml(data.location || 'N/A')}
+</div>
 
-                                    <div style="margin-top:8px">
-                                    <strong>Problem:</strong><br>
-                                    ${escapeHtml(data.description || 'No description')}
-                                    </div>
+<div style="margin-top:8px">
+<strong>Problem:</strong><br>
+${escapeHtml(data.description || 'No description')}
+</div>
                                 </div>
                             </div>
                             <div>
                                 ${photo}
                                 <div style="margin-top:8px">
-                                    <label class="small" style="font-weight:bold;">Status</label>
-                                    <select class="status" id="status-${r.id}" onchange="updateReportData('${r.id}')">
+                                    <select class="status" onchange="updateStatus('${r.id}', this.value)">
                                         <option ${data.status==='Pending' ? 'selected' : ''}>Pending</option>
                                         <option ${data.status==='In Progress' ? 'selected' : ''}>In Progress</option>
                                         <option ${data.status==='Resolved' ? 'selected' : ''}>Resolved</option>
                                         <option ${data.status==='Rejected' ? 'selected' : ''}>Rejected</option>
                                     </select>
                                 </div>
-                                <div style="margin-top:8px">
-                                    <label class="small" style="font-weight:bold;">Resolution Notes</label>
-                                    <textarea id="notes-${r.id}" style="width:100%; box-sizing:border-box; border-radius:8px; border:1px solid #e6e9f2; padding:6px; font-size:13px; resize:vertical;" rows="2" placeholder="Enter action resolution..." onchange="updateReportData('${r.id}')">${escapeHtml(data.resolution || '')}</textarea>
-                                </div>
                                 <button
                                     class="delete-btn"
                                     onclick="deleteReport('${r.id}')"
-                                    style="margin-top:12px;background:#dc2626;color:white;border:none;border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer;width:100%;">
+                                    style="margin-top:8px;background:#dc2626;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:13px;cursor:pointer;width:auto;">
                                     Delete Report
                                 </button>
                             </div>
@@ -235,47 +225,26 @@
                     `;
                 }).join('');
 
-                // Restore active textarea focus state safely
-                if (activeElId) {
-                    const restoredEl = document.getElementById(activeElId);
-                    if (restoredEl) {
-                        restoredEl.focus();
-                        if (activeSelectionStart !== null) restoredEl.selectionStart = activeSelectionStart;
-                    }
-                }
-
             } catch(err){
                 reportsEl.innerHTML = '<div class="small">Failed to load reports.</div>';
                 console.error(err);
             }
         }
 
-        window.updateReportData = async (id) => {
-            const statusVal = document.getElementById(`status-${id}`).value;
-            const notesVal = document.getElementById(`notes-${id}`).value;
-            
-            // Find old data to check if status actually changed to push to log history
-            const existingRow = allRows.find(r => r.id === id);
-            const oldStatus = existingRow ? existingRow.data.status : '';
-
-            const updatedPayload = {
-                status: statusVal,
-                resolution: notesVal
-            };
-
-            if (statusVal !== oldStatus) {
-                updatedPayload.history = arrayUnion({
-                    status: statusVal,
-                    time: new Date().toLocaleString()
-                });
-            }
-
+        window.updateStatus = async (id, status) => {
             try{
-                await updateDoc(doc(db, 'reports', id), updatedPayload);
+                await updateDoc(doc(db, 'reports', id), {
+                    status,
+                    history: arrayUnion({
+                        status: status,
+                        time: new Date().toLocaleString()
+                    })
+                });
                 await renderReports();
-            }catch(e){ alert('Failed to update report data'); console.error(e); }
+            }catch(e){ alert('Failed to update status'); console.error(e); }
         };
 
+        
         window.deleteReport = async (id) => {
             if (!confirm('Delete this report permanently?')) return;
             try{
@@ -287,6 +256,7 @@
             }
         };
 
+
         function escapeHtml(str){ return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'})[s]); }
 
         window.signOut = function(){
@@ -295,33 +265,36 @@
             location.replace('admin-login.html');
         }
 
-        let zoomLevel = 1;
+        
+let zoomLevel = 1;
 
-        window.openImageModal = function(src){
-          document.getElementById('modalImg').src = src;
-          document.getElementById('imageModal').classList.add('active');
-          zoomLevel = 1;
-          document.getElementById('modalImg').style.transform = `scale(${zoomLevel})`;
-        }
+window.openImageModal = function(src){
+  document.getElementById('modalImg').src = src;
+  document.getElementById('imageModal').classList.add('active');
+  zoomLevel = 1;
+  document.getElementById('modalImg').style.transform = `scale(${zoomLevel})`;
+}
 
-        window.closeImageModal = function(){
-          document.getElementById('imageModal').classList.remove('active');
-        }
+window.closeImageModal = function(){
+  document.getElementById('imageModal').classList.remove('active');
+}
 
-        window.zoomIn = function(){
-          zoomLevel += 0.25;
-          document.getElementById('modalImg').style.transform = `scale(${zoomLevel})`;
-        }
+window.zoomIn = function(){
+  zoomLevel += 0.25;
+  document.getElementById('modalImg').style.transform = `scale(${zoomLevel})`;
+}
 
-        window.zoomOut = function(){
-          zoomLevel = Math.max(0.5, zoomLevel - 0.25);
-          document.getElementById('modalImg').style.transform = `scale(${zoomLevel})`;
-        }
+window.zoomOut = function(){
+  zoomLevel = Math.max(0.5, zoomLevel - 0.25);
+  document.getElementById('modalImg').style.transform = `scale(${zoomLevel})`;
+}
 
-        document.addEventListener('click', e => {
-          const modal = document.getElementById('imageModal');
-          if(e.target === modal) closeImageModal();
-        });
+document.addEventListener('click', e => {
+  const modal = document.getElementById('imageModal');
+  if(e.target === modal) closeImageModal();
+});
+
+
         
         let refreshTimer = null;
 
@@ -346,23 +319,24 @@
             stopAutoRefresh();
           }
         });
-        
-        document.addEventListener('input',e=>{
-         if(e.target.id==='searchBox') renderReports();
-        });
-        document.addEventListener('change',e=>{
-         if(e.target.id==='statusFilter') renderReports();
-        });
 
-        renderReports();
-        startAutoRefresh();
+        
+document.addEventListener('input',e=>{
+ if(e.target.id==='searchBox') renderReports();
+});
+document.addEventListener('change',e=>{
+ if(e.target.id==='statusFilter') renderReports();
+});
+
+renderReports();
+startAutoRefresh();
+
+
     </script>
 
 <div class="image-modal" id="imageModal">
   <span class="modal-close" onclick="closeImageModal()">&times;</span>
-  <div class="modal-img-wrap">
-    <img id="modalImg" class="modal-img">
-  </div>
+  <img id="modalImg" class="modal-img">
   <div class="zoom-controls">
     <button onclick="zoomOut()">−</button>
     <button onclick="zoomIn()">+</button>
