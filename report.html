@@ -194,6 +194,18 @@
 
 
 
+        
+        <div class="form-group">
+          <label class="form-label">Photos (Optional)</label>
+          <div class="photo-zone">
+            <span class="zone-icon">📷</span>
+            <p>Click to add up to 3 images</p>
+            <div class="hint">JPG, PNG, WEBP • Max 2MB each</div>
+            <input type="file" id="photo-input" accept="image/*" multiple />
+          </div>
+          <div class="preview-grid" id="preview-grid"></div>
+        </div>
+
         <button type="submit" class="btn btn-primary" id="submit-btn" style="width:100%; padding:12px; font-size:15px;">
           Submit report
         </button>
@@ -223,6 +235,44 @@ function updateCounter() {
 // Initialize and add listener
 updateCounter();
 descriptionField.addEventListener('input', updateCounter);
+
+
+const selectedPhotos = [];
+const photoInput = document.getElementById('photo-input');
+const previewGrid = document.getElementById('preview-grid');
+
+photoInput?.addEventListener('change', async (e) => {
+  const files = [...e.target.files].slice(0, 3);
+  selectedPhotos.length = 0;
+  previewGrid.innerHTML = '';
+
+  for (const file of files) {
+    if (file.size > 2 * 1024 * 1024) {
+      alert(file.name + ' is larger than 2MB.');
+      continue;
+    }
+
+    const data = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    selectedPhotos.push({ name: file.name, data });
+
+    const div = document.createElement('div');
+    div.className = 'preview-item';
+    div.innerHTML = `<img src="${data}" alt=""><button type="button">×</button>`;
+    div.querySelector('button').onclick = () => {
+      const index = [...previewGrid.children].indexOf(div);
+      if (index > -1) selectedPhotos.splice(index, 1);
+      div.remove();
+    };
+    previewGrid.appendChild(div);
+  }
+});
+
 
 // Form submit
 document.getElementById('report-form').addEventListener('submit', async function(e) {
@@ -289,6 +339,7 @@ document.getElementById('report-form').addEventListener('submit', async function
       category,
       description,
       status: 'Pending',
+      photos: selectedPhotos,
       createdAt: serverTimestamp()
     });
 

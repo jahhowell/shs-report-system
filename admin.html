@@ -24,7 +24,7 @@
         .report-meta{ font-size:14px; color:#333; }
         .report-meta h3{ margin:0 0 6px; font-size:15px; }
         .small{ font-size:13px; color:#666; }
-        .photo-thumb{ width:72px; height:72px; object-fit:cover; border-radius:8px; border:1px solid #e6e9f2; }
+        .photo-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:10px}.photo-thumb{width:100%;height:90px;object-fit:cover;border-radius:8px;border:1px solid #e6e9f2;cursor:pointer}
         select.status{ width:100%; padding:8px; border-radius:8px; border:1px solid #e6e9f2; }
         .signout{ background:#fff; color:#1a73e8; border-radius:8px; padding:8px 10px; border:none; cursor:pointer; }
     </style>
@@ -77,7 +77,7 @@
                 reportsEl.innerHTML = rows.map(r => {
                     const data = r.data;
                     const shortId = r.id.slice(0,12).toUpperCase();
-                    const photo = (data.photos && data.photos[0] && (data.photos[0].url || data.photos[0].data)) ? `<img src="${data.photos[0].url || data.photos[0].data}" class="photo-thumb"/>` : '';
+                    const photo = data.photos?.length ? `<div class="photo-gallery">${data.photos.map(p=>`<img src="${p.url || p.data}" class="photo-thumb" onclick="window.open('${p.url || p.data}','_blank')">`).join('')}</div>` : '';
                     return `
                         <div class="report-row">
                             <div>
