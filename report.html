@@ -160,14 +160,14 @@
             <select id="location">
               <option value="">Select location</option>
               <option>Classroom</option>
-              <option>Restroom</option>
-              <option>Library</option>
-              <option>Laboratory</option>
-              <option>Hallway</option>
-              <option>Canteen</option>
-              <option>Gymnasium</option>
-              <option>Office</option>
-              <option>Other</option>
+<option>Restroom</option>
+<option>Library</option>
+<option>Laboratory</option>
+<option>Hallway</option>
+<option>Canteen</option>
+<option>Gymnasium</option>
+<option>Office</option>
+<option>Other</option>
             </select>
           </div>
           <div class="form-group">
@@ -274,6 +274,34 @@ photoInput?.addEventListener('change', async (e) => {
 });
 
 
+
+function saveDraft(){
+  const draft={
+    studentId:document.getElementById('studentId').value,
+    name:document.getElementById('name').value,
+    location:document.getElementById('location').value,
+    category:document.getElementById('category').value,
+    description:document.getElementById('description').value
+  };
+  localStorage.setItem('reportDraft',JSON.stringify(draft));
+}
+
+const draft=JSON.parse(localStorage.getItem('reportDraft')||'null');
+
+if(draft){
+ document.getElementById('studentId').value=draft.studentId||'';
+ document.getElementById('name').value=draft.name||'';
+ document.getElementById('location').value=draft.location||'';
+ document.getElementById('category').value=draft.category||'';
+ document.getElementById('description').value=draft.description||'';
+}
+
+['studentId','name','location','category','description'].forEach(id=>{
+ document.getElementById(id)?.addEventListener('input',saveDraft);
+ document.getElementById(id)?.addEventListener('change',saveDraft);
+});
+
+
 // Form submit
 document.getElementById('report-form').addEventListener('submit', async function(e) {
   e.preventDefault();
@@ -348,7 +376,7 @@ document.getElementById('report-form').addEventListener('submit', async function
     const saved = JSON.parse(localStorage.getItem('myReports') || '[]');
     saved.push({ shortId: docRef.id.slice(0,12).toUpperCase(), fullId: docRef.id });
     localStorage.setItem('myReports', JSON.stringify(saved));
-    successCard.style.display = 'block';
+    localStorage.removeItem('reportDraft'); successCard.style.display = 'block';
   } catch (err) {
     console.error('ERROR:', err);
     errBox.innerHTML = '<strong>Submission failed.</strong> ' + (err?.message || 'Please try again.');
