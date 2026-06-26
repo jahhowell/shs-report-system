@@ -25,4 +25,538 @@
         .report-meta h3{ margin:0 0 6px; font-size:15px; }
         .small{ font-size:13px; color:#666; }
         .photo-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:10px}.photo-thumb{width:100%;height:90px;object-fit:cover;border-radius:8px;border:1px solid #e6e9f2;cursor:pointer}
-        select.status{ width:1
+        select.status{ width:100%; padding:8px; border-radius:8px; border:1px solid #e6e9f2; }
+        .signout{ background:#fff; color:#1a73e8; border-radius:8px; padding:8px 10px; border:none; cursor:pointer; }
+    
+        /* Replaced Image Modal Styling */
+        .image-modal {
+          position: fixed;
+          inset: 0;
+          width: 100vw;
+          height: 100vh;
+          background: rgba(0,0,0,.96);
+          backdrop-filter: blur(4px);
+          display: none;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          overflow: hidden;
+          touch-action: none;
+        }
+        .image-modal.active {
+          display: flex;
+        }
+        .image-stage {
+          position: relative;
+          width: 100vw;
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        }
+        .modal-img {
+          max-width: 95vw;
+          max-height: 95vh;
+          object-fit: contain;
+          will-change: transform;
+          transform-origin: center center;
+          cursor: grab;
+          user-select: none;
+          -webkit-user-drag: none;
+          touch-action: none;
+        }
+        .modal-img.dragging {
+          cursor: grabbing;
+        }
+        .zoom-hint {
+          position: absolute;
+          top: 24px;
+          left: 50%;
+          transform: translateX(-50%);
+          color: #fff;
+          background: rgba(0,0,0,.45);
+          padding: 10px 14px;
+          border-radius: 999px;
+          font-size: 13px;
+          backdrop-filter: blur(8px);
+          z-index: 10001;
+          opacity: 1;
+          transition: opacity .4s;
+          pointer-events: none;
+        }
+        .modal-close {
+          position: absolute;
+          top: 20px;
+          right: 25px;
+          color: white;
+          font-size: 32px;
+          cursor: pointer;
+          z-index: 10000;
+        }
+
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+        .stat-card{background:#fff;padding:16px;border-radius:12px;text-align:center;box-shadow:0 6px 18px rgba(20,30,60,.06)}
+        .stat-num{font-size:28px;font-weight:700;color:#07294d}
+        .stat-label{font-size:13px;color:#64748b}
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="brand"><div class="logo"><picture><source srcset="assets/crest.png" type="image/png"><img src="assets/crest.svg" alt="SHS crest" style="width:36px;height:36px;object-fit:cover;border-radius:6px;"/></picture></div><div>Sacred Heart School — Admin</div></div>
+        <div class="actions">
+            <button onclick="location.href='index.html'">View site</button>
+            <button class="signout" onclick="signOut()">Sign out</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1 style="margin:0">Reports</h1>
+            <div class="small">
+    Auto-refresh:
+    <label style="display:inline-flex;align-items:center;gap:6px;">
+      <input type="checkbox" id="refresh-toggle" checked>
+      <span id="refresh-status">on</span>
+    </label>
+</div>
+        </div>
+
+        
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-num" id="totalCount">0</div><div class="stat-label">Total Reports</div></div>
+  <div class="stat-card"><div class="stat-num" id="pendingCount">0</div><div class="stat-label">Pending</div></div>
+  <div class="stat-card"><div class="stat-num" id="progressCount">0</div><div class="stat-label">In Progress</div></div>
+  <div class="stat-card"><div class="stat-num" id="resolvedCount">0</div><div class="stat-label">Resolved</div></div>
+  <div class="stat-card"><div class="stat-num" id="rejectedCount">0</div><div class="stat-label">Rejected</div></div>
+</div>
+
+<div class="card" style="margin-bottom:16px;">
+<input id="searchBox" placeholder="Search report ID, student ID, name, location..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;margin-bottom:10px;">
+<select id="statusFilter" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;">
+<option value="All">All Statuses</option>
+<option value="Pending">Pending</option>
+<option value="In Progress">In Progress</option>
+<option value="Resolved">Resolved</option>
+<option value="Rejected">Rejected</option>
+</select>
+</div>
+
+<div class="card" id="reports-card">
+            <div id="reports">Loading reports…</div>
+        </div>
+    </div>
+
+    <script type="module">
+        if(localStorage.getItem('adminLoggedIn') !== 'true') location.href = 'admin-login.html';
+
+        import { db } from './firebase.js';
+        import { collection, getDocs, doc, updateDoc, deleteDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        const reportsEl = document.getElementById('reports');
+let allRows = [];
+
+        async function renderReports(){
+            reportsEl.innerHTML = 'Loading…';
+            try{
+                const snap = await getDocs(collection(db, 'reports'));
+                if(snap.empty){ reportsEl.innerHTML = '<div class="small">No reports yet.</div>'; return; }
+
+                const rows = [];
+                snap.forEach(d => rows.push({ id: d.id, data: d.data() }));
+
+                // Sort by createdAt descending (newest first)
+                rows.sort((a, b) => {
+                  const timeA = a.data.createdAt?.toMillis?.() || 0;
+                  const timeB = b.data.createdAt?.toMillis?.() || 0;
+                  return timeB - timeA;
+                });
+
+                
+allRows = rows;
+
+document.getElementById('totalCount').textContent = rows.length;
+document.getElementById('pendingCount').textContent = rows.filter(r=>r.data.status==='Pending').length;
+document.getElementById('progressCount').textContent = rows.filter(r=>r.data.status==='In Progress').length;
+document.getElementById('resolvedCount').textContent = rows.filter(r=>r.data.status==='Resolved').length;
+document.getElementById('rejectedCount').textContent = rows.filter(r=>r.data.status==='Rejected').length;
+
+const searchTerm=(document.getElementById('searchBox')?.value||'').toLowerCase();
+const statusFilter=(document.getElementById('statusFilter')?.value||'All');
+
+const filteredRows=rows.filter(r=>{
+ const d=r.data;
+ const txt=(r.id+' '+(d.studentId||'')+' '+(d.name||'')+' '+(d.location||'')).toLowerCase();
+ const searchMatch=txt.includes(searchTerm);
+ const statusMatch=statusFilter==='All'||d.status===statusFilter;
+ return searchMatch && statusMatch;
+});
+
+rows.length=0;
+rows.push(...filteredRows);
+
+// render
+                reportsEl.innerHTML = rows.map(r => {
+                    const data = r.data;
+                    const shortId = r.id.slice(0,12).toUpperCase();
+                    const photo = data.photos?.length ? `<div class="photo-gallery">${data.photos.map(p=>`<img src="${p.url || p.data || p}" class="photo-thumb" onclick="openImageModal('${p.url || p.data || p}')">`).join('')}</div>` : '';
+                    return `
+                        <div class="report-row">
+                            <div>
+                                <div class="report-meta">
+                                    <h3>${escapeHtml(data.category || 'No category')}</h3>
+
+<div class="small" style="margin-top:4px;">
+<strong>Report ID:</strong> ${shortId}
+</div>
+
+<div class="small" style="margin-top:4px;">
+<strong>Student ID:</strong> ${escapeHtml(data.studentId || 'N/A')}
+</div>
+
+<div class="small" style="margin-top:4px;">
+<strong>Student Name:</strong> ${escapeHtml(data.name || 'N/A')}
+</div>
+
+<div class="small" style="margin-top:4px;">
+<strong>Location:</strong> ${escapeHtml(data.location || 'N/A')}
+</div>
+
+<div style="margin-top:8px">
+<strong>Problem:</strong><br>
+${escapeHtml(data.description || 'No description')}
+</div>
+
+<div style="margin-top:12px">
+<strong>Resolution Notes</strong>
+<textarea id="resolution-${r.id}" style="width:100%;min-height:90px;margin-top:6px;padding:8px;border:1px solid #ddd;border-radius:8px;">${escapeHtml(data.resolution || '')}</textarea>
+</div>
+                                </div>
+                            </div>
+                            <div>
+                                ${photo}
+                                <div style="margin-top:8px">
+                                    <select class="status" onchange="updateStatus('${r.id}', this.value)">
+                                        <option ${data.status==='Pending' ? 'selected' : ''}>Pending</option>
+                                        <option ${data.status==='In Progress' ? 'selected' : ''}>In Progress</option>
+                                        <option ${data.status==='Resolved' ? 'selected' : ''}>Resolved</option>
+                                        <option ${data.status==='Rejected' ? 'selected' : ''}>Rejected</option>
+                                    </select>
+                                </div>
+                                <button style="margin-top:8px;width:100%;" onclick="saveResolution('${r.id}')">Save Notes</button>
+                                <button
+                                    class="delete-btn"
+                                    onclick="deleteReport('${r.id}')"
+                                    style="margin-top:8px;background:#dc2626;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:13px;cursor:pointer;width:auto;">
+                                    Delete Report
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch(err){
+                reportsEl.innerHTML = '<div class="small">Failed to load reports.</div>';
+                console.error(err);
+            }
+        }
+
+        window.updateStatus = async (id, status) => {
+            try{
+                const resolution=document.getElementById(`resolution-${id}`)?.value.trim()||'';
+                await updateDoc(doc(db, 'reports', id), {
+                    status,
+                    resolution,
+                    history: arrayUnion({
+                        status: status,
+                        time: new Date().toLocaleString()
+                    })
+                });
+                await renderReports();
+            }catch(e){ alert('Failed to update status'); console.error(e); }
+        };
+
+        
+        
+window.saveResolution = async function(id){
+ try{
+  const notes=document.getElementById(`resolution-${id}`).value.trim();
+  await updateDoc(doc(db,'reports',id),{resolution:notes});
+  alert('Resolution notes saved.');
+ }catch(e){
+  console.error(e);
+  alert('Failed to save notes.');
+ }
+};
+
+
+window.deleteReport = async (id) => {
+            if (!confirm('Delete this report permanently?')) return;
+            try{
+                await deleteDoc(doc(db, 'reports', id));
+                await renderReports();
+            }catch(e){
+                alert('Failed to delete report');
+                console.error(e);
+            }
+        };
+
+
+        function escapeHtml(str){ return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'})[s]); }
+
+        window.signOut = function(){
+            localStorage.removeItem('adminLoggedIn');
+            sessionStorage.clear();
+            location.replace('admin-login.html');
+        }
+
+        
+// Replaced Modal Interactivity Script
+const viewerState = {
+  scale: 1, minScale: 1, maxScale: 5, x: 0, y: 0,
+  targetX: 0, targetY: 0, targetScale: 1,
+  dragging: false, lastTap: 0, startDistance: 0, startScale: 1,
+  raf: null, pointers: new Map()
+};
+
+function resetViewer() {
+  const img = document.getElementById('modalImg');
+  viewerState.scale = viewerState.targetScale = 1;
+  viewerState.x = viewerState.y = viewerState.targetX = viewerState.targetY = 0;
+  img.style.transform = 'translate(0px, 0px) scale(1)';
+  img.classList.remove('dragging');
+}
+
+function clampPan() {
+  const img = document.getElementById('modalImg');
+  const rect = img.getBoundingClientRect();
+  const vw = window.innerWidth, vh = window.innerHeight;
+  
+  const currentScale = viewerState.scale;
+  const baseWidth = rect.width / currentScale;
+  const baseHeight = rect.height / currentScale;
+  const scaledWidth = baseWidth * viewerState.targetScale;
+  const scaledHeight = baseHeight * viewerState.targetScale;
+
+  const maxX = Math.max(0, (scaledWidth - vw) / 2);
+  const maxY = Math.max(0, (scaledHeight - vh) / 2);
+
+  viewerState.targetX = Math.min(maxX, Math.max(-maxX, viewerState.targetX));
+  viewerState.targetY = Math.min(maxY, Math.max(-maxY, viewerState.targetY));
+}
+
+function animateViewer() {
+  const img = document.getElementById('modalImg');
+  viewerState.scale += (viewerState.targetScale - viewerState.scale) * 0.18;
+  viewerState.x += (viewerState.targetX - viewerState.x) * 0.18;
+  viewerState.y += (viewerState.targetY - viewerState.y) * 0.18;
+  img.style.transform = `translate(${viewerState.x}px, ${viewerState.y}px) scale(${viewerState.scale})`;
+  
+  if (Math.abs(viewerState.scale - viewerState.targetScale) > 0.001 || 
+      Math.abs(viewerState.x - viewerState.targetX) > 0.1 || 
+      Math.abs(viewerState.y - viewerState.targetY) > 0.1) {
+    viewerState.raf = requestAnimationFrame(animateViewer);
+  } else {
+    viewerState.raf = null;
+  }
+}
+
+function requestAnim() { 
+  if (!viewerState.raf) viewerState.raf = requestAnimationFrame(animateViewer); 
+}
+
+function zoomAt(clientX, clientY, newScale) {
+  const prevScale = viewerState.targetScale;
+  newScale = Math.max(viewerState.minScale, Math.min(viewerState.maxScale, newScale));
+  
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const originX = clientX - vw / 2;
+  const originY = clientY - vh / 2;
+
+  viewerState.targetX = originX - (originX - viewerState.targetX) * (newScale / prevScale);
+  viewerState.targetY = originY - (originY - viewerState.targetY) * (newScale / prevScale);
+  viewerState.targetScale = newScale;
+
+  clampPan(); 
+  requestAnim();
+}
+
+window.openImageModal = function(src) {
+  const scrollY = window.scrollY;
+  document.body.dataset.scrollY = scrollY;
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${scrollY}px`;
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+  document.body.style.width = "100%";
+  document.body.style.overflow = "hidden";
+
+  document.getElementById('modalImg').src = src;
+  document.getElementById('imageModal').classList.add('active');
+  resetViewer();
+
+  const hint = document.getElementById('zoomHint'); 
+  if (hint) {
+    hint.style.opacity = '1'; 
+    clearTimeout(window.__hintTimer); 
+    window.__hintTimer = setTimeout(() => hint.style.opacity = '0', 2500);
+  } 
+};
+
+window.closeImageModal = function() {
+  document.getElementById('imageModal').classList.remove('active');
+  resetViewer();
+
+  const scrollY = parseInt(document.body.dataset.scrollY || "0", 10);
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
+  document.body.style.overflow = "";
+  window.scrollTo(0, scrollY);
+
+  const hint = document.getElementById('zoomHint'); 
+  if (hint) {
+    hint.style.opacity = '1'; 
+    clearTimeout(window.__hintTimer); 
+    window.__hintTimer = setTimeout(() => hint.style.opacity = '0', 2500);
+  } 
+};
+
+document.addEventListener('click', e => {
+  const modal = document.getElementById('imageModal');
+  if (e.target === modal || e.target.classList.contains('image-stage')) closeImageModal();
+});
+
+document.addEventListener('keydown', e => { 
+  if (e.key === 'Escape') closeImageModal(); 
+});
+
+const imgEl = document.getElementById('modalImg');
+
+imgEl.addEventListener('wheel', e => {
+  e.preventDefault();
+  zoomAt(e.clientX, e.clientY, viewerState.targetScale + (e.deltaY < 0 ? 0.25 : -0.25));
+}, { passive: false });
+
+imgEl.addEventListener('dblclick', e => {
+  if (viewerState.targetScale > 1) {
+    viewerState.targetX = 0;
+    viewerState.targetY = 0;
+    viewerState.targetScale = 1;
+    clampPan();
+    requestAnim();
+  } else {
+    zoomAt(e.clientX, e.clientY, 3.5);
+  }
+});
+
+let startX = 0, startY = 0;
+imgEl.addEventListener('pointerdown', e => {
+  viewerState.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (viewerState.targetScale > 1) {
+    viewerState.dragging = true; 
+    imgEl.classList.add('dragging');
+    startX = e.clientX - viewerState.targetX; 
+    startY = e.clientY - viewerState.targetY;
+  }
+});
+
+imgEl.addEventListener('pointermove', e => {
+  if (viewerState.pointers.has(e.pointerId)) {
+    viewerState.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  }
+  if (viewerState.pointers.size === 2) {
+    const pts = [...viewerState.pointers.values()];
+    const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    const centerX = (pts[0].x + pts[1].x) / 2;
+    const centerY = (pts[0].y + pts[1].y) / 2;
+    if (!viewerState.startDistance) { 
+      viewerState.startDistance = dist; 
+      viewerState.startScale = viewerState.targetScale; 
+    }
+    zoomAt(centerX, centerY, viewerState.startScale * (dist / viewerState.startDistance));
+  } else if (viewerState.dragging && viewerState.targetScale > 1) {
+    viewerState.targetX = e.clientX - startX; 
+    viewerState.targetY = e.clientY - startY;
+    clampPan(); 
+    requestAnim();
+  }
+});
+
+function endPointer(e) {
+  viewerState.pointers.delete(e.pointerId);
+  viewerState.dragging = false; 
+  imgEl.classList.remove('dragging');
+  if (viewerState.pointers.size < 2) viewerState.startDistance = 0;
+}
+imgEl.addEventListener('pointerup', endPointer);
+imgEl.addEventListener('pointercancel', endPointer);
+
+imgEl.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - viewerState.lastTap < 300) {
+    if (viewerState.targetScale > 1) {
+      viewerState.targetX = 0;
+      viewerState.targetY = 0;
+      viewerState.targetScale = 1;
+      clampPan();
+      requestAnim();
+    } else {
+      zoomAt(window.innerWidth / 2, window.innerHeight / 2, 2.5);
+    }
+  }
+  viewerState.lastTap = now;
+});
+
+        
+        let refreshTimer = null;
+
+        function startAutoRefresh(){
+          if(refreshTimer) clearInterval(refreshTimer);
+          refreshTimer = setInterval(renderReports,12000);
+          document.getElementById('refresh-status').textContent='on';
+        }
+
+        function stopAutoRefresh(){
+          if(refreshTimer) clearInterval(refreshTimer);
+          refreshTimer = null;
+          document.getElementById('refresh-status').textContent='off';
+        }
+
+        const refreshToggle = document.getElementById('refresh-toggle');
+
+        refreshToggle.addEventListener('change',()=>{
+          if(refreshToggle.checked){
+            startAutoRefresh();
+          }else{
+            stopAutoRefresh();
+          }
+        });
+
+        
+document.addEventListener('input',e=>{
+ if(e.target.id==='searchBox') renderReports();
+});
+document.addEventListener('change',e=>{
+ if(e.target.id==='statusFilter') renderReports();
+});
+
+renderReports();
+startAutoRefresh();
+
+
+    </script>
+
+<div class="image-modal" id="imageModal">
+  <span class="modal-close" onclick="closeImageModal()">&times;</span>
+  <div class="image-stage">
+    <img id="modalImg" class="modal-img">
+    <div id="zoomHint" class="zoom-hint">Scroll to zoom • Double-click to zoom • Drag to pan • Pinch to zoom</div>
+  </div>
+</div>
+
+<script src="ui.js"></script>
+</body>
+</html>
