@@ -42,13 +42,13 @@
 .modal-img{
   max-width:90vw; max-height:90vh; object-fit:contain;
   will-change:transform;
-  transform-origin:0 0;
+  transform-origin:center center;
   cursor:grab;
   user-select:none; -webkit-user-drag:none;
   touch-action:none;
 }
 .modal-img.dragging{cursor:grabbing;}
-.zoom-hint{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);color:#fff;background:rgba(0,0,0,.45);padding:10px 14px;border-radius:999px;font-size:13px;backdrop-filter:blur(8px);z-index:10001;opacity:1;transition:opacity .4s}
+.zoom-hint{position:absolute;top:24px;left:50%;transform:translateX(-50%);color:#fff;background:rgba(0,0,0,.45);padding:10px 14px;border-radius:999px;font-size:13px;backdrop-filter:blur(8px);z-index:10001;opacity:1;transition:opacity .4s}
 .modal-close{
   position:absolute; top:20px; right:25px; color:white;
   font-size:32px; cursor:pointer; z-index:10000;
@@ -434,7 +434,7 @@ startAutoRefresh();
   <span class="modal-close" onclick="closeImageModal()">&times;</span>
   <div class="image-stage">
     <img id="modalImg" class="modal-img">
-    <div id="zoomHint" class="zoom-hint">🖱 Scroll to zoom • Double-click to zoom • 📱 Pinch to zoom</div>
+    <div id="zoomHint" class="zoom-hint">Scroll to zoom • Double-click to zoom • Drag to pan • Pinch to zoom</div>
   </div>
 </div>
 
