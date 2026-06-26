@@ -28,39 +28,78 @@
         select.status{ width:100%; padding:8px; border-radius:8px; border:1px solid #e6e9f2; }
         .signout{ background:#fff; color:#1a73e8; border-radius:8px; padding:8px 10px; border:none; cursor:pointer; }
     
-.image-modal{
-  position:fixed; inset:0; background:rgba(0,0,0,.92);
-  display:none; align-items:center; justify-content:center; z-index:9999;
-  overflow:hidden; touch-action:none;
-}
-.image-modal.active{display:flex;}
-.image-stage{
-  position:relative; width:100%; height:100%;
-  display:flex; align-items:center; justify-content:center;
-  overflow:hidden;
-}
-.modal-img{
-  max-width:90vw; max-height:90vh; object-fit:contain;
-  will-change:transform;
-  transform-origin:center center;
-  cursor:grab;
-  user-select:none; -webkit-user-drag:none;
-  touch-action:none;
-}
-.modal-img.dragging{cursor:grabbing;}
-.zoom-hint{position:absolute;top:24px;left:50%;transform:translateX(-50%);color:#fff;background:rgba(0,0,0,.45);padding:10px 14px;border-radius:999px;font-size:13px;backdrop-filter:blur(8px);z-index:10001;opacity:1;transition:opacity .4s}
-.modal-close{
-  position:absolute; top:20px; right:25px; color:white;
-  font-size:32px; cursor:pointer; z-index:10000;
-}
+        /* Replaced Image Modal Styling */
+        .image-modal {
+          position: fixed;
+          inset: 0;
+          width: 100vw;
+          height: 100vh;
+          background: rgba(0,0,0,.96);
+          backdrop-filter: blur(4px);
+          display: none;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          overflow: hidden;
+          touch-action: none;
+        }
+        .image-modal.active {
+          display: flex;
+        }
+        .image-stage {
+          position: relative;
+          width: 100vw;
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        }
+        .modal-img {
+          max-width: 95vw;
+          max-height: 95vh;
+          object-fit: contain;
+          will-change: transform;
+          transform-origin: center center;
+          cursor: grab;
+          user-select: none;
+          -webkit-user-drag: none;
+          touch-action: none;
+        }
+        .modal-img.dragging {
+          cursor: grabbing;
+        }
+        .zoom-hint {
+          position: absolute;
+          top: 24px;
+          left: 50%;
+          transform: translateX(-50%);
+          color: #fff;
+          background: rgba(0,0,0,.45);
+          padding: 10px 14px;
+          border-radius: 999px;
+          font-size: 13px;
+          backdrop-filter: blur(8px);
+          z-index: 10001;
+          opacity: 1;
+          transition: opacity .4s;
+          pointer-events: none;
+        }
+        .modal-close {
+          position: absolute;
+          top: 20px;
+          right: 25px;
+          color: white;
+          font-size: 32px;
+          cursor: pointer;
+          z-index: 10000;
+        }
 
-
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
-.stat-card{background:#fff;padding:16px;border-radius:12px;text-align:center;box-shadow:0 6px 18px rgba(20,30,60,.06)}
-.stat-num{font-size:28px;font-weight:700;color:#07294d}
-.stat-label{font-size:13px;color:#64748b}
-
-</style>
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+        .stat-card{background:#fff;padding:16px;border-radius:12px;text-align:center;box-shadow:0 6px 18px rgba(20,30,60,.06)}
+        .stat-num{font-size:28px;font-weight:700;color:#07294d}
+        .stat-label{font-size:13px;color:#64748b}
+    </style>
 </head>
 <body>
     <div class="topbar">
@@ -272,124 +311,204 @@ window.deleteReport = async (id) => {
         }
 
         
-
+// Replaced Modal Interactivity Script
 const viewerState = {
- scale:1,minScale:1,maxScale:5,x:0,y:0,
- targetX:0,targetY:0,targetScale:1,
- dragging:false,lastTap:0,startDistance:0,startScale:1,
- raf:null,pointers:new Map()
+  scale: 1, minScale: 1, maxScale: 5, x: 0, y: 0,
+  targetX: 0, targetY: 0, targetScale: 1,
+  dragging: false, lastTap: 0, startDistance: 0, startScale: 1,
+  raf: null, pointers: new Map()
 };
 
-function resetViewer(){
- const img=document.getElementById('modalImg');
- viewerState.scale=viewerState.targetScale=1;
- viewerState.x=viewerState.y=viewerState.targetX=viewerState.targetY=0;
- img.style.transform='translate(0px,0px) scale(1)';
- img.classList.remove('dragging');
+function resetViewer() {
+  const img = document.getElementById('modalImg');
+  viewerState.scale = viewerState.targetScale = 1;
+  viewerState.x = viewerState.y = viewerState.targetX = viewerState.targetY = 0;
+  img.style.transform = 'translate(0px, 0px) scale(1)';
+  img.classList.remove('dragging');
 }
 
-function clampPan(){
- const img=document.getElementById('modalImg');
- const rect=img.getBoundingClientRect();
- const vw=window.innerWidth,vh=window.innerHeight;
- const sw=rect.width*viewerState.targetScale/viewerState.scale;
- const sh=rect.height*viewerState.targetScale/viewerState.scale;
- const maxX=Math.max(0,(sw-vw)/2);
- const maxY=Math.max(0,(sh-vh)/2);
- viewerState.targetX=Math.min(maxX,Math.max(-maxX,viewerState.targetX));
- viewerState.targetY=Math.min(maxY,Math.max(-maxY,viewerState.targetY));
+function clampPan() {
+  const img = document.getElementById('modalImg');
+  const rect = img.getBoundingClientRect();
+  const vw = window.innerWidth, vh = window.innerHeight;
+  
+  const currentScale = viewerState.scale;
+  const baseWidth = rect.width / currentScale;
+  const baseHeight = rect.height / currentScale;
+  const scaledWidth = baseWidth * viewerState.targetScale;
+  const scaledHeight = baseHeight * viewerState.targetScale;
+
+  const maxX = Math.max(0, (scaledWidth - vw) / 2);
+  const maxY = Math.max(0, (scaledHeight - vh) / 2);
+
+  viewerState.targetX = Math.min(maxX, Math.max(-maxX, viewerState.targetX));
+  viewerState.targetY = Math.min(maxY, Math.max(-maxY, viewerState.targetY));
 }
 
-function animateViewer(){
- const img=document.getElementById('modalImg');
- viewerState.scale += (viewerState.targetScale-viewerState.scale)*0.18;
- viewerState.x += (viewerState.targetX-viewerState.x)*0.18;
- viewerState.y += (viewerState.targetY-viewerState.y)*0.18;
- img.style.transform=`translate(${viewerState.x}px,${viewerState.y}px) scale(${viewerState.scale})`;
- if(Math.abs(viewerState.scale-viewerState.targetScale)>0.001 || Math.abs(viewerState.x-viewerState.targetX)>0.1 || Math.abs(viewerState.y-viewerState.targetY)>0.1){
-   viewerState.raf=requestAnimationFrame(animateViewer);
- } else viewerState.raf=null;
-}
-function requestAnim(){ if(!viewerState.raf) animateViewer(); }
-
-function zoomAt(clientX,clientY,newScale){
- const prev=viewerState.targetScale;
- newScale=Math.max(1,Math.min(5,newScale));
- const factor=newScale/prev;
- viewerState.targetX=(viewerState.targetX-(clientX-window.innerWidth/2))*factor+(clientX-window.innerWidth/2);
- viewerState.targetY=(viewerState.targetY-(clientY-window.innerHeight/2))*factor+(clientY-window.innerHeight/2);
- viewerState.targetScale=newScale;
- clampPan(); requestAnim();
+function animateViewer() {
+  const img = document.getElementById('modalImg');
+  viewerState.scale += (viewerState.targetScale - viewerState.scale) * 0.18;
+  viewerState.x += (viewerState.targetX - viewerState.x) * 0.18;
+  viewerState.y += (viewerState.targetY - viewerState.y) * 0.18;
+  img.style.transform = `translate(${viewerState.x}px, ${viewerState.y}px) scale(${viewerState.scale})`;
+  
+  if (Math.abs(viewerState.scale - viewerState.targetScale) > 0.001 || 
+      Math.abs(viewerState.x - viewerState.targetX) > 0.1 || 
+      Math.abs(viewerState.y - viewerState.targetY) > 0.1) {
+    viewerState.raf = requestAnimationFrame(animateViewer);
+  } else {
+    viewerState.raf = null;
+  }
 }
 
-window.openImageModal=function(src){
- document.getElementById('modalImg').src=src;
- document.getElementById('imageModal').classList.add('active');
- resetViewer();
- const hint=document.getElementById('zoomHint'); if(hint){hint.style.opacity='1'; clearTimeout(window.__hintTimer); window.__hintTimer=setTimeout(()=>hint.style.opacity='0',2500);} 
-}
-window.closeImageModal=function(){
- document.getElementById('imageModal').classList.remove('active');
- resetViewer();
- const hint=document.getElementById('zoomHint'); if(hint){hint.style.opacity='1'; clearTimeout(window.__hintTimer); window.__hintTimer=setTimeout(()=>hint.style.opacity='0',2500);} 
+function requestAnim() { 
+  if (!viewerState.raf) viewerState.raf = requestAnimationFrame(animateViewer); 
 }
 
-document.addEventListener('click',e=>{
- const modal=document.getElementById('imageModal');
- if(e.target===modal) closeImageModal();
+function zoomAt(clientX, clientY, newScale) {
+  const prevScale = viewerState.targetScale;
+  newScale = Math.max(viewerState.minScale, Math.min(viewerState.maxScale, newScale));
+  
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const originX = clientX - vw / 2;
+  const originY = clientY - vh / 2;
+
+  viewerState.targetX = originX - (originX - viewerState.targetX) * (newScale / prevScale);
+  viewerState.targetY = originY - (originY - viewerState.targetY) * (newScale / prevScale);
+  viewerState.targetScale = newScale;
+
+  clampPan(); 
+  requestAnim();
+}
+
+window.openImageModal = function(src) {
+  const scrollY = window.scrollY;
+  document.body.dataset.scrollY = scrollY;
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${scrollY}px`;
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+  document.body.style.width = "100%";
+  document.body.style.overflow = "hidden";
+
+  document.getElementById('modalImg').src = src;
+  document.getElementById('imageModal').classList.add('active');
+  resetViewer();
+
+  const hint = document.getElementById('zoomHint'); 
+  if (hint) {
+    hint.style.opacity = '1'; 
+    clearTimeout(window.__hintTimer); 
+    window.__hintTimer = setTimeout(() => hint.style.opacity = '0', 2500);
+  } 
+};
+
+window.closeImageModal = function() {
+  document.getElementById('imageModal').classList.remove('active');
+  resetViewer();
+
+  const scrollY = parseInt(document.body.dataset.scrollY || "0", 10);
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
+  document.body.style.overflow = "";
+  window.scrollTo(0, scrollY);
+
+  const hint = document.getElementById('zoomHint'); 
+  if (hint) {
+    hint.style.opacity = '1'; 
+    clearTimeout(window.__hintTimer); 
+    window.__hintTimer = setTimeout(() => hint.style.opacity = '0', 2500);
+  } 
+};
+
+document.addEventListener('click', e => {
+  const modal = document.getElementById('imageModal');
+  if (e.target === modal || e.target.classList.contains('image-stage')) closeImageModal();
 });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeImageModal(); });
 
-const imgEl=document.getElementById('modalImg');
-
-imgEl.addEventListener('wheel',e=>{
- e.preventDefault();
- zoomAt(e.clientX,e.clientY,viewerState.targetScale+(e.deltaY<0?0.25:-0.25));
-},{passive:false});
-
-imgEl.addEventListener('dblclick',e=>{
- zoomAt(e.clientX,e.clientY,viewerState.targetScale>1?1:3.5);
- if(viewerState.targetScale<=1){viewerState.targetX=0;viewerState.targetY=0;}
+document.addEventListener('keydown', e => { 
+  if (e.key === 'Escape') closeImageModal(); 
 });
 
-let startX=0,startY=0;
-imgEl.addEventListener('pointerdown',e=>{
- viewerState.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
- if(viewerState.targetScale>1){
-   viewerState.dragging=true; imgEl.classList.add('dragging');
-   startX=e.clientX-viewerState.targetX; startY=e.clientY-viewerState.targetY;
- }
+const imgEl = document.getElementById('modalImg');
+
+imgEl.addEventListener('wheel', e => {
+  e.preventDefault();
+  zoomAt(e.clientX, e.clientY, viewerState.targetScale + (e.deltaY < 0 ? 0.25 : -0.25));
+}, { passive: false });
+
+imgEl.addEventListener('dblclick', e => {
+  if (viewerState.targetScale > 1) {
+    viewerState.targetX = 0;
+    viewerState.targetY = 0;
+    viewerState.targetScale = 1;
+    clampPan();
+    requestAnim();
+  } else {
+    zoomAt(e.clientX, e.clientY, 3.5);
+  }
 });
-imgEl.addEventListener('pointermove',e=>{
- if(viewerState.pointers.has(e.pointerId)) viewerState.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
- if(viewerState.pointers.size===2){
-   const pts=[...viewerState.pointers.values()];
-   const dist=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
-   const centerX=(pts[0].x+pts[1].x)/2, centerY=(pts[0].y+pts[1].y)/2;
-   if(!viewerState.startDistance){ viewerState.startDistance=dist; viewerState.startScale=viewerState.targetScale; }
-   zoomAt(centerX,centerY,viewerState.startScale*(dist/viewerState.startDistance));
- } else if(viewerState.dragging && viewerState.targetScale>1){
-   viewerState.targetX=e.clientX-startX; viewerState.targetY=e.clientY-startY;
-   clampPan(); requestAnim();
- }
+
+let startX = 0, startY = 0;
+imgEl.addEventListener('pointerdown', e => {
+  viewerState.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (viewerState.targetScale > 1) {
+    viewerState.dragging = true; 
+    imgEl.classList.add('dragging');
+    startX = e.clientX - viewerState.targetX; 
+    startY = e.clientY - viewerState.targetY;
+  }
 });
-function endPointer(e){
- viewerState.pointers.delete(e.pointerId);
- viewerState.dragging=false; imgEl.classList.remove('dragging');
- if(viewerState.pointers.size<2) viewerState.startDistance=0;
+
+imgEl.addEventListener('pointermove', e => {
+  if (viewerState.pointers.has(e.pointerId)) {
+    viewerState.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  }
+  if (viewerState.pointers.size === 2) {
+    const pts = [...viewerState.pointers.values()];
+    const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    const centerX = (pts[0].x + pts[1].x) / 2;
+    const centerY = (pts[0].y + pts[1].y) / 2;
+    if (!viewerState.startDistance) { 
+      viewerState.startDistance = dist; 
+      viewerState.startScale = viewerState.targetScale; 
+    }
+    zoomAt(centerX, centerY, viewerState.startScale * (dist / viewerState.startDistance));
+  } else if (viewerState.dragging && viewerState.targetScale > 1) {
+    viewerState.targetX = e.clientX - startX; 
+    viewerState.targetY = e.clientY - startY;
+    clampPan(); 
+    requestAnim();
+  }
+});
+
+function endPointer(e) {
+  viewerState.pointers.delete(e.pointerId);
+  viewerState.dragging = false; 
+  imgEl.classList.remove('dragging');
+  if (viewerState.pointers.size < 2) viewerState.startDistance = 0;
 }
-imgEl.addEventListener('pointerup',endPointer);
-imgEl.addEventListener('pointercancel',endPointer);
+imgEl.addEventListener('pointerup', endPointer);
+imgEl.addEventListener('pointercancel', endPointer);
 
-imgEl.addEventListener('touchend',e=>{
- const now=Date.now();
- if(now-viewerState.lastTap<300){
-   zoomAt(window.innerWidth/2,window.innerHeight/2,viewerState.targetScale>1?1:2.5);
- }
- viewerState.lastTap=now;
+imgEl.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - viewerState.lastTap < 300) {
+    if (viewerState.targetScale > 1) {
+      viewerState.targetX = 0;
+      viewerState.targetY = 0;
+      viewerState.targetScale = 1;
+      clampPan();
+      requestAnim();
+    } else {
+      zoomAt(window.innerWidth / 2, window.innerHeight / 2, 2.5);
+    }
+  }
+  viewerState.lastTap = now;
 });
-
-
 
         
         let refreshTimer = null;
