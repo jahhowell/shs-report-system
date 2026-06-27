@@ -241,35 +241,145 @@ const selectedPhotos = [];
 const photoInput = document.getElementById('photo-input');
 const previewGrid = document.getElementById('preview-grid');
 
+/**
+ * Reads a File as a data URL.
+ */
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Could not read file: ' + file.name));
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Returns the EXIF orientation value from a JPEG ArrayBuffer (1–8), or 1 if not found.
+ */
+function getExifOrientation(buffer) {
+  const view = new DataView(buffer);
+  if (view.getUint16(0, false) !== 0xFFD8) return 1; // not JPEG
+  let offset = 2;
+  while (offset < view.byteLength) {
+    const marker = view.getUint16(offset, false);
+    offset += 2;
+    if (marker === 0xFFE1) {
+      if (view.getUint32(offset + 2, false) !== 0x45786966) return 1; // no 'Exif'
+      const little = view.getUint16(offset + 8, false) === 0x4949;
+      const ifdOffset = offset + 8 + view.getUint32(offset + 12, little);
+      const tags = view.getUint16(ifdOffset, little);
+      for (let i = 0; i < tags; i++) {
+        if (view.getUint16(ifdOffset + 2 + i * 12, little) === 0x0112) {
+          return view.getUint16(ifdOffset + 2 + i * 12 + 8, little);
+        }
+      }
+      return 1;
+    }
+    if ((marker & 0xFF00) !== 0xFF00) break;
+    offset += view.getUint16(offset, false);
+  }
+  return 1;
+}
+
+/**
+ * Compresses an image File using Canvas.
+ * - Corrects EXIF orientation for phone photos.
+ * - Caps max dimension at 1920px.
+ * - Skips resize if already under 500 KB but still re-encodes at quality 0.85.
+ * - Returns a base64 data URL (image/jpeg).
+ */
+async function compressImage(file) {
+  const MAX_DIMENSION = 1920;
+  const JPEG_QUALITY  = 0.85;
+  const SKIP_RESIZE_THRESHOLD = 500 * 1024; // 500 KB
+
+  // Read raw bytes for EXIF, and also get a data URL for the Image element
+  const [arrayBuffer, dataURL] = await Promise.all([
+    file.arrayBuffer(),
+    readFileAsDataURL(file)
+  ]);
+
+  const orientation = getExifOrientation(arrayBuffer);
+
+  // Load into an Image element
+  const img = await new Promise((resolve, reject) => {
+    const el = new Image();
+    el.onload = () => resolve(el);
+    el.onerror = () => reject(new Error('Could not load image: ' + file.name));
+    el.src = dataURL;
+  });
+
+  let { naturalWidth: w, naturalHeight: h } = img;
+
+  // Determine if we need to swap width/height (orientations 5–8 are rotated 90°)
+  const swapped = orientation >= 5 && orientation <= 8;
+  const logicalW = swapped ? h : w;
+  const logicalH = swapped ? w : h;
+
+  // Scale down if larger than MAX_DIMENSION
+  let scale = 1;
+  if (file.size > SKIP_RESIZE_THRESHOLD || logicalW > MAX_DIMENSION || logicalH > MAX_DIMENSION) {
+    const maxSide = Math.max(logicalW, logicalH);
+    if (maxSide > MAX_DIMENSION) scale = MAX_DIMENSION / maxSide;
+  }
+
+  const destW = Math.round(logicalW * scale);
+  const destH = Math.round(logicalH * scale);
+
+  const canvas = document.createElement('canvas');
+  canvas.width  = destW;
+  canvas.height = destH;
+  const ctx = canvas.getContext('2d');
+
+  // Apply EXIF orientation transform so the image is right-side up
+  ctx.save();
+  switch (orientation) {
+    case 2: ctx.transform(-1, 0, 0,  1, destW,     0);     break;
+    case 3: ctx.transform(-1, 0, 0, -1, destW, destH);     break;
+    case 4: ctx.transform( 1, 0, 0, -1,     0, destH);     break;
+    case 5: ctx.transform( 0, 1, 1,  0,     0,     0);     break;
+    case 6: ctx.transform( 0, 1,-1,  0, destH,     0);     break;
+    case 7: ctx.transform( 0,-1,-1,  0, destH, destW);     break;
+    case 8: ctx.transform( 0,-1, 1,  0,     0, destW);     break;
+    default: break; // orientation 1 — no transform needed
+  }
+
+  // For orientations 5–8 the source is drawn with swapped axes
+  if (swapped) {
+    ctx.drawImage(img, 0, 0, Math.round(h * scale), Math.round(w * scale));
+  } else {
+    ctx.drawImage(img, 0, 0, destW, destH);
+  }
+  ctx.restore();
+
+  return canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+}
+
 photoInput?.addEventListener('change', async (e) => {
   const files = [...e.target.files].slice(0, 3);
   selectedPhotos.length = 0;
   previewGrid.innerHTML = '';
 
   for (const file of files) {
-    if (file.size > 2 * 1024 * 1024) {
-      alert(file.name + ' is larger than 2MB.');
-      continue;
+    // Accept any image/* the browser can decode; skip size check since we compress
+    try {
+      const data = await compressImage(file);
+
+      selectedPhotos.push({ name: file.name, data });
+
+      const div = document.createElement('div');
+      div.className = 'preview-item';
+      div.innerHTML = `<img src="${data}" alt=""><button type="button">×</button>`;
+      div.querySelector('button').onclick = () => {
+        const index = [...previewGrid.children].indexOf(div);
+        if (index > -1) selectedPhotos.splice(index, 1);
+        div.remove();
+      };
+      previewGrid.appendChild(div);
+    } catch (err) {
+      console.error('Image compression failed:', err);
+      alert('Could not process "' + file.name + '". Please try a different image.');
     }
-
-    const data = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-
-    selectedPhotos.push({ name: file.name, data });
-
-    const div = document.createElement('div');
-    div.className = 'preview-item';
-    div.innerHTML = `<img src="${data}" alt=""><button type="button">×</button>`;
-    div.querySelector('button').onclick = () => {
-      const index = [...previewGrid.children].indexOf(div);
-      if (index > -1) selectedPhotos.splice(index, 1);
-      div.remove();
-    };
-    previewGrid.appendChild(div);
   }
 });
 
