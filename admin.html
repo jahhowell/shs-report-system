@@ -6,11 +6,15 @@
     <title>Admin Dashboard – SHS-AdC</title>
     <link rel="stylesheet" href="style.css" />
     <style>
-        html, body { height: 100%; }
+        :root {
+            --shs-navy: #07294d;
+            --surface: #f1f5f9;
+        }
+        html, body { height: 100%; width: 100%; }
         body { background: var(--surface); margin: 0; }
 
         /* ===== APP SHELL ===== */
-        .app-shell { display: flex; min-height: 100vh; }
+        .app-shell { display: flex; min-height: 100vh; width: 100%; }
 
         /* ===== SIDEBAR ===== */
         .sidebar {
@@ -52,7 +56,7 @@
         .sidebar-footer button.signout:hover { opacity: 0.9; }
 
         /* ===== MAIN ===== */
-        .main-content { flex: 1; min-width: 0; padding: 22px 26px 60px; max-width: 1200px; }
+        .main-content { flex: 1; min-width: 0; width: 100%; padding: 22px 26px 60px; }
         .content-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         .content-topbar h1 { font-size: 20px; margin: 0; color: var(--shs-navy); }
         .content-topbar .sub { font-size: 12.5px; color: #64748b; margin-top: 2px; }
