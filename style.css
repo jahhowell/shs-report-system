@@ -551,3 +551,25 @@ nav{
   z-index:0;
   transform:translate(-50%,-50%);
 }
+
+
+/* Sidebar active fix */
+.sidebar .nav-item,
+.sidebar .nav-item:hover,
+.sidebar .nav-item:focus,
+.sidebar .nav-item:focus-visible{
+  background:transparent !important;
+  color:rgba(255,255,255,.8) !important;
+  outline:none !important;
+  box-shadow:none !important;
+}
+
+.sidebar .nav-item.active{
+  background:rgba(255,255,255,.12) !important;
+  color:#fff !important;
+}
+
+.sidebar .nav-item::before,
+.sidebar .nav-item::after{
+  display:none !important;
+}
