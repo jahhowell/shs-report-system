@@ -436,7 +436,7 @@
                         </select>
                         <textarea class="resolution-area" id="resolution-${r.id}"
                             placeholder="Add resolution notes…">${escapeHtml(d.resolution||'')}</textarea>
-                        <button class="btn-save" onclick="saveResolution('${r.id}')">💾 Save notes</button>
+                        <button class="btn-save" id="savebtn-${r.id}" onclick="saveResolution('${r.id}', this)">💾 Save notes</button>
                         <button class="btn-delete" onclick="deleteReport('${r.id}')">🗑 Delete report</button>
                     </div>
                 </div>
@@ -465,15 +465,14 @@
         } catch(e) { alert('Failed to update status.'); console.error(e); }
     };
 
-    window.saveResolution = async (id) => {
+    window.saveResolution = async (id, btn) => {
         try {
             const notes = document.getElementById(`resolution-${id}`)?.value.trim();
             await updateDoc(doc(db, 'reports', id), { resolution: notes });
-            // Small feedback without alert
-            const btn = event.target;
             btn.textContent = '✓ Saved!';
-            setTimeout(() => btn.textContent = '💾 Save notes', 2000);
-        } catch(e) { alert('Failed to save notes.'); console.error(e); }
+            btn.style.background = '#166534';
+            setTimeout(() => { btn.textContent = '💾 Save notes'; btn.style.background = ''; }, 2000);
+        } catch(e) { console.error(e); alert('Failed to save notes: ' + e.message); }
     };
 
     window.deleteReport = async (id) => {
