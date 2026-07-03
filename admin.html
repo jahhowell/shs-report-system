@@ -27,8 +27,12 @@
         .sidebar-brand .titles .t1 { font-weight: 700; font-size: 13px; }
         .sidebar-brand .titles .t2 { font-size: 11px; color: rgba(255,255,255,0.65); }
 
-        .sidebar-nav { padding: 14px 10px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; justify-content:flex-start; }
-        .sidebar-footer { margin-top:auto; padding: 12px 10px 16px; border-top: 1px solid rgba(255,255,255,0.12); display:flex; flex-direction:column; gap:8px; }
+        .sidebar-nav {
+            display:flex;
+            flex-direction:column;
+            gap:4px;
+            padding:14px 10px;
+        }
         .nav-item {
             display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
             background: transparent; border: none; color: rgba(255,255,255,0.75);
@@ -46,7 +50,14 @@
         .nav-item.active .nav-badge { background: rgba(7,41,77,0.1); color: var(--shs-navy); }
         .nav-divider { height: 1px; background: rgba(255,255,255,0.12); margin: 8px 6px; }
 
-        .sidebar-footer { padding: 12px 10px 16px; border-top: 1px solid rgba(255,255,255,0.12); display: flex; flex-direction: column; gap: 6px; }
+        .sidebar-footer {
+            margin-top:auto;
+            padding:12px 10px 16px;
+            border-top:1px solid rgba(255,255,255,0.12);
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+        }
         .sidebar-footer button {
             display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
             background: transparent; border: 1px solid rgba(255,255,255,0.18); color: #fff;
