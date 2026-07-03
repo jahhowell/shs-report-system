@@ -3,566 +3,543 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard – SHS-AdC</title>
     <link rel="stylesheet" href="style.css" />
     <style>
-        body{ font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--surface); margin:0; }
-        .topbar{ background:var(--shs-navy); color:var(--card-bg); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; }
-        .topbar .brand{ font-weight:700; display:flex; align-items:center; gap:12px; }
-        .topbar .brand .logo{ width:36px; height:36px; background:var(--card-bg); color:var(--shs-navy); display:flex; align-items:center; justify-content:center; border-radius:8px; font-weight:700; }
-        .topbar .actions button{ background:transparent; color:var(--card-bg); border:1px solid rgba(255,255,255,0.16); padding:8px 12px; border-radius:8px; cursor:pointer; }
-        .container{ max-width:1100px; margin:28px auto; padding:0 20px; }
-        .header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
-        .card{ background:#fff; border-radius:12px; padding:16px; box-shadow:0 6px 18px rgba(20,30,60,0.06); }
-        .report-row{ display:grid; grid-template-columns: 1fr 220px; gap:12px; align-items:start; border-bottom:1px solid #f0f2f8; padding:12px 0; }
-        @media (max-width:768px){
-        .report-row{grid-template-columns:1fr;}
-        .report-row > div:last-child{margin-top:10px;}
-        select.status{width:100%;}
-        .photo-thumb{width:100%;max-width:200px;height:auto;}
-        }
-        .report-meta{ font-size:14px; color:#333; }
-        .report-meta h3{ margin:0 0 6px; font-size:15px; }
-        .small{ font-size:13px; color:#666; }
-        .photo-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:10px}.photo-thumb{width:100%;height:90px;object-fit:cover;border-radius:8px;border:1px solid #e6e9f2;cursor:pointer}
-        select.status{ width:100%; padding:8px; border-radius:8px; border:1px solid #e6e9f2; }
-        .signout{ background:#fff; color:#1a73e8; border-radius:8px; padding:8px 10px; border:none; cursor:pointer; }
-    
-        /* Replaced Image Modal Styling */
-        .image-modal {
-          position: fixed;
-          inset: 0;
-          width: 100vw;
-          height: 100vh;
-          background: rgba(0,0,0,.96);
-          backdrop-filter: blur(4px);
-          display: none;
-          align-items: center;
-          justify-content: center;
-          z-index: 9999;
-          overflow: hidden;
-          touch-action: none;
-        }
-        .image-modal.active {
-          display: flex;
-        }
-        .image-stage {
-          position: relative;
-          width: 100vw;
-          height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          overflow: hidden;
-        }
-        .modal-img {
-          max-width: 95vw;
-          max-height: 95vh;
-          object-fit: contain;
-          will-change: transform;
-          transform-origin: center center;
-          cursor: grab;
-          user-select: none;
-          -webkit-user-drag: none;
-          touch-action: none;
-        }
-        .modal-img.dragging {
-          cursor: grabbing;
-        }
-        .zoom-hint {
-          position: absolute;
-          top: 24px;
-          left: 50%;
-          transform: translateX(-50%);
-          color: #fff;
-          background: rgba(0,0,0,.45);
-          padding: 10px 14px;
-          border-radius: 999px;
-          font-size: 13px;
-          backdrop-filter: blur(8px);
-          z-index: 10001;
-          opacity: 1;
-          transition: opacity .4s;
-          pointer-events: none;
-        }
-        .modal-close {
-          position: absolute;
-          top: 20px;
-          right: 25px;
-          color: white;
-          font-size: 32px;
-          cursor: pointer;
-          z-index: 10000;
-        }
+        body { background: var(--surface); margin: 0; }
 
-        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
-        .stat-card{background:#fff;padding:16px;border-radius:12px;text-align:center;box-shadow:0 6px 18px rgba(20,30,60,.06)}
-        .stat-num{font-size:28px;font-weight:700;color:#07294d}
-        .stat-label{font-size:13px;color:#64748b}
+        /* TOPBAR */
+        .topbar { background: var(--shs-navy); color: #fff; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+        .topbar .brand { font-weight: 700; display: flex; align-items: center; gap: 12px; }
+        .topbar .brand img { width: 36px; height: 36px; object-fit: cover; border-radius: 6px; }
+        .topbar .actions { display: flex; gap: 8px; }
+        .topbar .actions button { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 7px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+        .topbar .actions .signout { background: #fff; color: var(--shs-navy); font-weight: 600; }
+
+        /* CONTAINER */
+        .container { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+
+        /* STATS */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: #fff; padding: 16px; border-radius: 12px; text-align: center; box-shadow: 0 4px 14px rgba(20,30,60,.06); cursor: pointer; transition: transform 0.18s, box-shadow 0.18s; border: 2px solid transparent; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(20,30,60,.10); }
+        .stat-card.active-filter { border-color: var(--shs-navy); }
+        .stat-num { font-size: 26px; font-weight: 700; color: var(--shs-navy); }
+        .stat-num.pending  { color: #92660a; }
+        .stat-num.progress { color: #1447a0; }
+        .stat-num.resolved { color: #166534; }
+        .stat-num.rejected { color: #991b1b; }
+        .stat-label { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+        /* TABS */
+        .tabs { display: flex; gap: 4px; margin-bottom: 16px; background: #fff; padding: 6px; border-radius: 12px; box-shadow: 0 4px 14px rgba(20,30,60,.06); }
+        .tab-btn { flex: 1; padding: 9px 12px; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; background: transparent; color: #64748b; transition: all 0.18s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .tab-btn:hover { background: #f1f5f9; color: var(--shs-navy); }
+        .tab-btn.active { background: var(--shs-navy); color: #fff; }
+        .tab-badge { background: rgba(255,255,255,0.25); color: inherit; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 20px; min-width: 20px; text-align: center; }
+        .tab-btn:not(.active) .tab-badge { background: #e2e8f0; color: #475569; }
+
+        /* SEARCH BAR */
+        .search-bar { background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(20,30,60,.06); display: flex; gap: 10px; align-items: center; }
+        .search-bar input { flex: 1; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 12px; font-size: 14px; outline: none; transition: border-color 0.15s; }
+        .search-bar input:focus { border-color: var(--shs-navy); }
+        .search-bar .sort-select { border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 12px; font-size: 13px; color: var(--shs-navy); background: #f8fafc; outline: none; cursor: pointer; }
+        .refresh-label { font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+
+        /* REPORT CARDS */
+        .reports-list { display: flex; flex-direction: column; gap: 12px; }
+        .report-card { background: #fff; border-radius: 12px; padding: 16px 18px; box-shadow: 0 4px 14px rgba(20,30,60,.06); border-left: 4px solid #e2e8f0; transition: transform 0.18s; }
+        .report-card:hover { transform: translateY(-1px); }
+        .report-card.pending  { border-left-color: #f0c808; }
+        .report-card.in-progress { border-left-color: #3b82f6; }
+        .report-card.resolved { border-left-color: #22c55e; }
+        .report-card.rejected { border-left-color: #ef4444; }
+        .report-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+        .report-card-title { font-size: 15px; font-weight: 600; color: var(--shs-navy); margin: 0 0 4px; }
+        .report-card-meta { font-size: 12px; color: #64748b; display: flex; flex-wrap: wrap; gap: 10px; }
+        .meta-item { display: flex; align-items: center; gap: 4px; }
+        .report-card-body { font-size: 13px; color: #334155; margin: 10px 0; line-height: 1.6; background: #f8fafc; border-radius: 8px; padding: 10px 12px; }
+        .report-card-footer { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+        .photo-gallery { display: flex; gap: 6px; flex-wrap: wrap; }
+        .photo-thumb { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; transition: transform 0.15s; }
+        .photo-thumb:hover { transform: scale(1.05); }
+        .controls-col { display: flex; flex-direction: column; gap: 6px; min-width: 180px; flex: 1; }
+        select.status { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 13px; background: #f8fafc; color: var(--shs-navy); cursor: pointer; }
+        .resolution-area { width: 100%; min-height: 70px; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; resize: vertical; font-family: inherit; }
+        .btn-save { background: var(--shs-navy); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; }
+        .btn-save:hover { opacity: 0.85; }
+        .btn-delete { background: #fff; color: #dc2626; border: 1px solid #fca5a5; border-radius: 8px; padding: 6px 14px; font-size: 12px; cursor: pointer; width: 100%; }
+        .btn-delete:hover { background: #fef2f2; }
+
+        /* EMPTY STATE */
+        .empty-state { text-align: center; padding: 48px 20px; color: #94a3b8; }
+        .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+        .empty-state p { font-size: 14px; }
+
+        /* URGENCY BADGE */
+        .urgent-tag { background: #fef2f2; color: #dc2626; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; border: 1px solid #fca5a5; }
+
+        /* IMAGE MODAL */
+        .image-modal { position: fixed; inset: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,.96); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 9999; overflow: hidden; touch-action: none; }
+        .image-modal.active { display: flex; }
+        .image-stage { position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .modal-img { max-width: 95vw; max-height: 95vh; object-fit: contain; will-change: transform; transform-origin: center center; cursor: grab; user-select: none; -webkit-user-drag: none; touch-action: none; }
+        .modal-img.dragging { cursor: grabbing; }
+        .zoom-hint { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,.45); padding: 10px 14px; border-radius: 999px; font-size: 13px; backdrop-filter: blur(8px); z-index: 10001; opacity: 1; transition: opacity .4s; pointer-events: none; }
+        .modal-close { position: absolute; top: 20px; right: 25px; color: white; font-size: 32px; cursor: pointer; z-index: 10000; }
+
+        @media (max-width: 640px) {
+            .report-card-footer { flex-direction: column; }
+            .tabs { flex-wrap: wrap; }
+            .search-bar { flex-wrap: wrap; }
+        }
     </style>
 </head>
 <body>
-    <div class="topbar">
-        <div class="brand"><div class="logo"><picture><source srcset="assets/crest.png" type="image/png"><img src="assets/crest.svg" alt="SHS crest" style="width:36px;height:36px;object-fit:cover;border-radius:6px;"/></picture></div><div>Sacred Heart School — Admin</div></div>
-        <div class="actions">
-            <button onclick="location.href='index.html'">View site</button>
-            <button class="signout" onclick="signOut()">Sign out</button>
+
+<!-- TOPBAR -->
+<div class="topbar">
+    <div class="brand">
+        <picture>
+            <source srcset="assets/crest.png" type="image/png">
+            <img src="assets/crest.svg" alt="SHS crest" />
+        </picture>
+        <div>Sacred Heart School — Admin</div>
+    </div>
+    <div class="actions">
+        <button onclick="location.href='index.html'">View site</button>
+        <button class="signout" onclick="signOut()">Sign out</button>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- STATS -->
+    <div class="stats-grid">
+        <div class="stat-card" id="stat-all" onclick="setTab('all')">
+            <div class="stat-num" id="totalCount">0</div>
+            <div class="stat-label">Total Reports</div>
+        </div>
+        <div class="stat-card" id="stat-pending" onclick="setTab('active'); setStatusFilter('Pending')">
+            <div class="stat-num pending" id="pendingCount">0</div>
+            <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-card" id="stat-progress" onclick="setTab('active'); setStatusFilter('In Progress')">
+            <div class="stat-num progress" id="progressCount">0</div>
+            <div class="stat-label">In Progress</div>
+        </div>
+        <div class="stat-card" id="stat-resolved" onclick="setTab('resolved')">
+            <div class="stat-num resolved" id="resolvedCount">0</div>
+            <div class="stat-label">Resolved</div>
+        </div>
+        <div class="stat-card" id="stat-rejected" onclick="setTab('rejected')">
+            <div class="stat-num rejected" id="rejectedCount">0</div>
+            <div class="stat-label">Rejected</div>
         </div>
     </div>
 
-    <div class="container">
-        <div class="header">
-            <h1 style="margin:0">Reports</h1>
-            <div class="small">
-    Auto-refresh:
-    <label style="display:inline-flex;align-items:center;gap:6px;">
-      <input type="checkbox" id="refresh-toggle" checked>
-      <span id="refresh-status">on</span>
-    </label>
-</div>
-        </div>
-
-        
-<div class="stats-grid">
-  <div class="stat-card"><div class="stat-num" id="totalCount">0</div><div class="stat-label">Total Reports</div></div>
-  <div class="stat-card"><div class="stat-num" id="pendingCount">0</div><div class="stat-label">Pending</div></div>
-  <div class="stat-card"><div class="stat-num" id="progressCount">0</div><div class="stat-label">In Progress</div></div>
-  <div class="stat-card"><div class="stat-num" id="resolvedCount">0</div><div class="stat-label">Resolved</div></div>
-  <div class="stat-card"><div class="stat-num" id="rejectedCount">0</div><div class="stat-label">Rejected</div></div>
-</div>
-
-<div class="card" style="margin-bottom:16px;">
-<input id="searchBox" placeholder="Search report ID, student ID, name, location..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;margin-bottom:10px;">
-<select id="statusFilter" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;">
-<option value="All">All Statuses</option>
-<option value="Pending">Pending</option>
-<option value="In Progress">In Progress</option>
-<option value="Resolved">Resolved</option>
-<option value="Rejected">Rejected</option>
-</select>
-</div>
-
-<div class="card" id="reports-card">
-            <div id="reports">Loading reports…</div>
-        </div>
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="tab-btn active" id="tab-active" onclick="setTab('active')">
+            🔴 Active <span class="tab-badge" id="badge-active">0</span>
+        </button>
+        <button class="tab-btn" id="tab-resolved" onclick="setTab('resolved')">
+            ✅ Resolved <span class="tab-badge" id="badge-resolved">0</span>
+        </button>
+        <button class="tab-btn" id="tab-rejected" onclick="setTab('rejected')">
+            ❌ Rejected <span class="tab-badge" id="badge-rejected">0</span>
+        </button>
+        <button class="tab-btn" id="tab-all" onclick="setTab('all')">
+            📋 All Reports <span class="tab-badge" id="badge-all">0</span>
+        </button>
     </div>
 
-    <script type="module">
-        if(localStorage.getItem('adminLoggedIn') !== 'true') location.href = 'admin-login.html';
+    <!-- SEARCH BAR -->
+    <div class="search-bar">
+        <input id="searchBox" placeholder="Search by name, ID, location, category…" oninput="applyFilters()" />
+        <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="urgency">By urgency</option>
+        </select>
+        <label class="refresh-label">
+            Auto-refresh
+            <input type="checkbox" id="refresh-toggle" checked onchange="toggleRefresh(this.checked)" />
+            <span id="refresh-status">on</span>
+        </label>
+    </div>
 
-        import { db } from './firebase.js';
-        import { collection, getDocs, doc, updateDoc, deleteDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    <!-- REPORTS LIST -->
+    <div class="reports-list" id="reports">
+        <div class="empty-state"><div class="icon">⏳</div><p>Loading reports…</p></div>
+    </div>
 
-        const reportsEl = document.getElementById('reports');
-let allRows = [];
+</div>
 
-        async function fetchAndRender(){
-            reportsEl.innerHTML = 'Loading…';
-            try{
-                const snap = await getDocs(collection(db, 'reports'));
-                if(snap.empty){ reportsEl.innerHTML = '<div class="small">No reports yet.</div>'; allRows=[]; updateStats([]); return; }
+<!-- IMAGE MODAL -->
+<div class="image-modal" id="imageModal">
+    <span class="modal-close" onclick="closeImageModal()">&times;</span>
+    <div class="image-stage">
+        <img id="modalImg" class="modal-img" alt="Report photo">
+        <div id="zoomHint" class="zoom-hint">Scroll to zoom · Double-click to zoom · Drag to pan · Pinch to zoom</div>
+    </div>
+</div>
 
-                const rows = [];
-                snap.forEach(d => rows.push({ id: d.id, data: d.data() }));
+<script type="module">
+    // ---- AUTH GUARD ----
+    if (localStorage.getItem('adminLoggedIn') !== 'true') location.href = 'admin-login.html';
 
-                rows.sort((a, b) => {
-                  const timeA = a.data.createdAt?.toMillis?.() || 0;
-                  const timeB = b.data.createdAt?.toMillis?.() || 0;
-                  return timeB - timeA;
-                });
+    import { db } from './firebase.js';
+    import { collection, getDocs, doc, updateDoc, deleteDoc, arrayUnion }
+        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-                allRows = rows;
-                updateStats(rows);
-                applyFilters();
+    // ---- STATE ----
+    let allRows    = [];
+    let currentTab = 'active';
+    let refreshTimer = null;
 
-            } catch(err){
-                reportsEl.innerHTML = '<div class="small">Failed to load reports.</div>';
-                console.error(err);
-            }
+    // ---- FETCH FROM FIRESTORE ----
+    async function fetchAndRender() {
+        try {
+            const snap = await getDocs(collection(db, 'reports'));
+            const rows = [];
+            snap.forEach(d => rows.push({ id: d.id, data: d.data() }));
+            allRows = rows;
+            updateStats(rows);
+            updateBadges(rows);
+            applyFilters();
+        } catch (err) {
+            document.getElementById('reports').innerHTML =
+                '<div class="empty-state"><div class="icon">⚠️</div><p>Failed to load reports. Check your connection.</p></div>';
+            console.error(err);
         }
-
-        function updateStats(rows){
-            document.getElementById('totalCount').textContent = rows.length;
-            document.getElementById('pendingCount').textContent = rows.filter(r=>r.data.status==='Pending').length;
-            document.getElementById('progressCount').textContent = rows.filter(r=>r.data.status==='In Progress').length;
-            document.getElementById('resolvedCount').textContent = rows.filter(r=>r.data.status==='Resolved').length;
-            document.getElementById('rejectedCount').textContent = rows.filter(r=>r.data.status==='Rejected').length;
-        }
-
-        function applyFilters(){
-            const searchTerm=(document.getElementById('searchBox')?.value||'').toLowerCase();
-            const statusFilter=(document.getElementById('statusFilter')?.value||'All');
-            const rows = allRows.filter(r=>{
-                const d=r.data;
-                const txt=(r.id+' '+(d.studentId||'')+' '+(d.name||'')+' '+(d.location||'')).toLowerCase();
-                return txt.includes(searchTerm) && (statusFilter==='All'||d.status===statusFilter);
-            });
-
-        async function renderReports(){ applyFilters(); }
-
-                if(!rows.length){ reportsEl.innerHTML='<div class="small">No reports match your search.</div>'; return; }
-
-            reportsEl.innerHTML = rows.map(r => {
-                    const data = r.data;
-                    const shortId = r.id.slice(0,12).toUpperCase();
-                    const photo = data.photos?.length ? `<div class="photo-gallery">${data.photos.map(p=>`<img src="${p.url || p.data || p}" class="photo-thumb" onclick="openImageModal('${p.url || p.data || p}')">`).join('')}</div>` : '';
-                    return `
-                        <div class="report-row">
-                            <div>
-                                <div class="report-meta">
-                                    <h3>${escapeHtml(data.category || 'No category')}</h3>
-
-<div class="small" style="margin-top:4px;">
-<strong>Report ID:</strong> ${shortId}
-</div>
-
-<div class="small" style="margin-top:4px;">
-<strong>Student ID:</strong> ${escapeHtml(data.studentId || 'N/A')}
-</div>
-
-<div class="small" style="margin-top:4px;">
-<strong>Student Name:</strong> ${escapeHtml(data.name || 'N/A')}
-</div>
-
-<div class="small" style="margin-top:4px;">
-<strong>Location:</strong> ${escapeHtml(data.location || 'N/A')}
-</div>
-
-<div style="margin-top:8px">
-<strong>Problem:</strong><br>
-${escapeHtml(data.description || 'No description')}
-</div>
-
-<div style="margin-top:12px">
-<strong>Resolution Notes</strong>
-<textarea id="resolution-${r.id}" style="width:100%;min-height:90px;margin-top:6px;padding:8px;border:1px solid #ddd;border-radius:8px;">${escapeHtml(data.resolution || '')}</textarea>
-</div>
-                                </div>
-                            </div>
-                            <div>
-                                ${photo}
-                                <div style="margin-top:8px">
-                                    <select class="status" onchange="updateStatus('${r.id}', this.value)">
-                                        <option ${data.status==='Pending' ? 'selected' : ''}>Pending</option>
-                                        <option ${data.status==='In Progress' ? 'selected' : ''}>In Progress</option>
-                                        <option ${data.status==='Resolved' ? 'selected' : ''}>Resolved</option>
-                                        <option ${data.status==='Rejected' ? 'selected' : ''}>Rejected</option>
-                                    </select>
-                                </div>
-                                <button style="margin-top:8px;width:100%;" onclick="saveResolution('${r.id}')">Save Notes</button>
-                                <button
-                                    class="delete-btn"
-                                    onclick="deleteReport('${r.id}')"
-                                    style="margin-top:8px;background:#dc2626;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:13px;cursor:pointer;width:auto;">
-                                    Delete Report
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-            } catch(err){
-                reportsEl.innerHTML = '<div class="small">Failed to load reports.</div>';
-                console.error(err);
-            }
-        }
-
-        window.updateStatus = async (id, status) => {
-            try{
-                const resolution=document.getElementById(`resolution-${id}`)?.value.trim()||'';
-                await updateDoc(doc(db, 'reports', id), {
-                    status,
-                    resolution,
-                    history: arrayUnion({
-                        status: status,
-                        time: new Date().toLocaleString()
-                    })
-                });
-                await fetchAndRender();
-            }catch(e){ alert('Failed to update status'); console.error(e); }
-        };
-
-        
-        
-window.saveResolution = async function(id){
- try{
-  const notes=document.getElementById(`resolution-${id}`).value.trim();
-  await updateDoc(doc(db,'reports',id),{resolution:notes});
-  alert('Resolution notes saved.');
- }catch(e){
-  console.error(e);
-  alert('Failed to save notes.');
- }
-};
-
-
-window.deleteReport = async (id) => {
-            if (!confirm('Delete this report permanently?')) return;
-            try{
-                await deleteDoc(doc(db, 'reports', id));
-                await fetchAndRender();
-            }catch(e){
-                alert('Failed to delete report');
-                console.error(e);
-            }
-        };
-
-
-        function escapeHtml(str){ return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'})[s]); }
-
-        window.signOut = function(){
-            localStorage.removeItem('adminLoggedIn');
-            sessionStorage.clear();
-            location.replace('admin-login.html');
-        }
-
-        
-// Replaced Modal Interactivity Script
-const viewerState = {
-  scale: 1, minScale: 1, maxScale: 5, x: 0, y: 0,
-  targetX: 0, targetY: 0, targetScale: 1,
-  dragging: false, lastTap: 0, startDistance: 0, startScale: 1,
-  raf: null, pointers: new Map()
-};
-
-function resetViewer() {
-  const img = document.getElementById('modalImg');
-  viewerState.scale = viewerState.targetScale = 1;
-  viewerState.x = viewerState.y = viewerState.targetX = viewerState.targetY = 0;
-  img.style.transform = 'translate(0px, 0px) scale(1)';
-  img.classList.remove('dragging');
-}
-
-function clampPan() {
-  const img = document.getElementById('modalImg');
-  const rect = img.getBoundingClientRect();
-  const vw = window.innerWidth, vh = window.innerHeight;
-  
-  const currentScale = viewerState.scale;
-  const baseWidth = rect.width / currentScale;
-  const baseHeight = rect.height / currentScale;
-  const scaledWidth = baseWidth * viewerState.targetScale;
-  const scaledHeight = baseHeight * viewerState.targetScale;
-
-  const maxX = Math.max(0, (scaledWidth - vw) / 2);
-  const maxY = Math.max(0, (scaledHeight - vh) / 2);
-
-  viewerState.targetX = Math.min(maxX, Math.max(-maxX, viewerState.targetX));
-  viewerState.targetY = Math.min(maxY, Math.max(-maxY, viewerState.targetY));
-}
-
-function animateViewer() {
-  const img = document.getElementById('modalImg');
-  viewerState.scale += (viewerState.targetScale - viewerState.scale) * 0.18;
-  viewerState.x += (viewerState.targetX - viewerState.x) * 0.18;
-  viewerState.y += (viewerState.targetY - viewerState.y) * 0.18;
-  img.style.transform = `translate(${viewerState.x}px, ${viewerState.y}px) scale(${viewerState.scale})`;
-  
-  if (Math.abs(viewerState.scale - viewerState.targetScale) > 0.001 || 
-      Math.abs(viewerState.x - viewerState.targetX) > 0.1 || 
-      Math.abs(viewerState.y - viewerState.targetY) > 0.1) {
-    viewerState.raf = requestAnimationFrame(animateViewer);
-  } else {
-    viewerState.raf = null;
-  }
-}
-
-function requestAnim() { 
-  if (!viewerState.raf) viewerState.raf = requestAnimationFrame(animateViewer); 
-}
-
-function zoomAt(clientX, clientY, newScale) {
-  const prevScale = viewerState.targetScale;
-  newScale = Math.max(viewerState.minScale, Math.min(viewerState.maxScale, newScale));
-  
-  const vw = window.innerWidth, vh = window.innerHeight;
-  const originX = clientX - vw / 2;
-  const originY = clientY - vh / 2;
-
-  viewerState.targetX = originX - (originX - viewerState.targetX) * (newScale / prevScale);
-  viewerState.targetY = originY - (originY - viewerState.targetY) * (newScale / prevScale);
-  viewerState.targetScale = newScale;
-
-  clampPan(); 
-  requestAnim();
-}
-
-window.openImageModal = function(src) {
-  const scrollY = window.scrollY;
-  document.body.dataset.scrollY = scrollY;
-  document.body.style.position = "fixed";
-  document.body.style.top = `-${scrollY}px`;
-  document.body.style.left = "0";
-  document.body.style.right = "0";
-  document.body.style.width = "100%";
-  document.body.style.overflow = "hidden";
-
-  document.getElementById('modalImg').src = src;
-  document.getElementById('imageModal').classList.add('active');
-  resetViewer();
-
-  const hint = document.getElementById('zoomHint'); 
-  if (hint) {
-    hint.style.opacity = '1'; 
-    clearTimeout(window.__hintTimer); 
-    window.__hintTimer = setTimeout(() => hint.style.opacity = '0', 2500);
-  } 
-};
-
-window.closeImageModal = function() {
-  document.getElementById('imageModal').classList.remove('active');
-  resetViewer();
-
-  const scrollY = parseInt(document.body.dataset.scrollY || "0", 10);
-  document.body.style.position = "";
-  document.body.style.top = "";
-  document.body.style.left = "";
-  document.body.style.right = "";
-  document.body.style.width = "";
-  document.body.style.overflow = "";
-  window.scrollTo(0, scrollY);
-
-  const hint = document.getElementById('zoomHint'); 
-  if (hint) {
-    hint.style.opacity = '1'; 
-    clearTimeout(window.__hintTimer); 
-    window.__hintTimer = setTimeout(() => hint.style.opacity = '0', 2500);
-  } 
-};
-
-document.addEventListener('click', e => {
-  const modal = document.getElementById('imageModal');
-  if (e.target === modal || e.target.classList.contains('image-stage')) closeImageModal();
-});
-
-document.addEventListener('keydown', e => { 
-  if (e.key === 'Escape') closeImageModal(); 
-});
-
-const imgEl = document.getElementById('modalImg');
-
-imgEl.addEventListener('wheel', e => {
-  e.preventDefault();
-  zoomAt(e.clientX, e.clientY, viewerState.targetScale + (e.deltaY < 0 ? 0.25 : -0.25));
-}, { passive: false });
-
-imgEl.addEventListener('dblclick', e => {
-  if (viewerState.targetScale > 1) {
-    viewerState.targetX = 0;
-    viewerState.targetY = 0;
-    viewerState.targetScale = 1;
-    clampPan();
-    requestAnim();
-  } else {
-    zoomAt(e.clientX, e.clientY, 3.5);
-  }
-});
-
-let startX = 0, startY = 0;
-imgEl.addEventListener('pointerdown', e => {
-  viewerState.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  if (viewerState.targetScale > 1) {
-    viewerState.dragging = true; 
-    imgEl.classList.add('dragging');
-    startX = e.clientX - viewerState.targetX; 
-    startY = e.clientY - viewerState.targetY;
-  }
-});
-
-imgEl.addEventListener('pointermove', e => {
-  if (viewerState.pointers.has(e.pointerId)) {
-    viewerState.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  }
-  if (viewerState.pointers.size === 2) {
-    const pts = [...viewerState.pointers.values()];
-    const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
-    const centerX = (pts[0].x + pts[1].x) / 2;
-    const centerY = (pts[0].y + pts[1].y) / 2;
-    if (!viewerState.startDistance) { 
-      viewerState.startDistance = dist; 
-      viewerState.startScale = viewerState.targetScale; 
     }
-    zoomAt(centerX, centerY, viewerState.startScale * (dist / viewerState.startDistance));
-  } else if (viewerState.dragging && viewerState.targetScale > 1) {
-    viewerState.targetX = e.clientX - startX; 
-    viewerState.targetY = e.clientY - startY;
-    clampPan(); 
-    requestAnim();
-  }
-});
 
-function endPointer(e) {
-  viewerState.pointers.delete(e.pointerId);
-  viewerState.dragging = false; 
-  imgEl.classList.remove('dragging');
-  if (viewerState.pointers.size < 2) viewerState.startDistance = 0;
-}
-imgEl.addEventListener('pointerup', endPointer);
-imgEl.addEventListener('pointercancel', endPointer);
-
-imgEl.addEventListener('touchend', e => {
-  const now = Date.now();
-  if (now - viewerState.lastTap < 300) {
-    if (viewerState.targetScale > 1) {
-      viewerState.targetX = 0;
-      viewerState.targetY = 0;
-      viewerState.targetScale = 1;
-      clampPan();
-      requestAnim();
-    } else {
-      zoomAt(window.innerWidth / 2, window.innerHeight / 2, 2.5);
+    // ---- STATS ----
+    function updateStats(rows) {
+        document.getElementById('totalCount').textContent    = rows.length;
+        document.getElementById('pendingCount').textContent  = rows.filter(r => r.data.status === 'Pending').length;
+        document.getElementById('progressCount').textContent = rows.filter(r => r.data.status === 'In Progress').length;
+        document.getElementById('resolvedCount').textContent = rows.filter(r => r.data.status === 'Resolved').length;
+        document.getElementById('rejectedCount').textContent = rows.filter(r => r.data.status === 'Rejected').length;
     }
-  }
-  viewerState.lastTap = now;
-});
 
-        
-        let refreshTimer = null;
+    function updateBadges(rows) {
+        const active   = rows.filter(r => r.data.status === 'Pending' || r.data.status === 'In Progress').length;
+        const resolved = rows.filter(r => r.data.status === 'Resolved').length;
+        const rejected = rows.filter(r => r.data.status === 'Rejected').length;
+        document.getElementById('badge-active').textContent   = active;
+        document.getElementById('badge-resolved').textContent = resolved;
+        document.getElementById('badge-rejected').textContent = rejected;
+        document.getElementById('badge-all').textContent      = rows.length;
+    }
 
-        function startAutoRefresh(){
-          if(refreshTimer) clearInterval(refreshTimer);
-          refreshTimer = setInterval(fetchAndRender,12000);
-          document.getElementById('refresh-status').textContent='on';
-        }
+    // ---- TABS ----
+    window.setTab = function(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + tab)?.classList.add('active');
+        // Reset status filter dropdown if it exists
+        const sf = document.getElementById('statusFilter');
+        if (sf) sf.value = 'All';
+        applyFilters();
+    };
 
-        function stopAutoRefresh(){
-          if(refreshTimer) clearInterval(refreshTimer);
-          refreshTimer = null;
-          document.getElementById('refresh-status').textContent='off';
-        }
+    window.setStatusFilter = function(status) {
+        applyFilters(status);
+    };
 
-        const refreshToggle = document.getElementById('refresh-toggle');
+    // ---- FILTER + SORT + RENDER ----
+    window.applyFilters = function(forceStatus) {
+        const search = (document.getElementById('searchBox')?.value || '').toLowerCase();
+        const sort   = document.getElementById('sortSelect')?.value || 'newest';
 
-        refreshToggle.addEventListener('change',()=>{
-          if(refreshToggle.checked){
-            startAutoRefresh();
-          }else{
-            stopAutoRefresh();
-          }
+        // Tab filter
+        let rows = allRows.filter(r => {
+            const s = r.data.status;
+            if (currentTab === 'active')   return s === 'Pending' || s === 'In Progress';
+            if (currentTab === 'resolved') return s === 'Resolved';
+            if (currentTab === 'rejected') return s === 'Rejected';
+            return true; // 'all'
         });
 
-        
-document.addEventListener('input',e=>{
- if(e.target.id==='searchBox') applyFilters();
-});
-document.addEventListener('change',e=>{
- if(e.target.id==='statusFilter') applyFilters();
-});
+        // Optional force status (from stat card click)
+        if (forceStatus) rows = rows.filter(r => r.data.status === forceStatus);
 
-fetchAndRender();
-startAutoRefresh();
+        // Search
+        if (search) {
+            rows = rows.filter(r => {
+                const d = r.data;
+                return (r.id + ' ' + (d.studentId||'') + ' ' + (d.name||'') + ' ' + (d.location||'') + ' ' + (d.category||''))
+                    .toLowerCase().includes(search);
+            });
+        }
 
+        // Sort
+        const urgencyOrder = { 'Pending': 0, 'In Progress': 1, 'Resolved': 2, 'Rejected': 3 };
+        rows.sort((a, b) => {
+            if (sort === 'urgency') return (urgencyOrder[a.data.status]||9) - (urgencyOrder[b.data.status]||9);
+            const tA = a.data.createdAt?.toMillis?.() || 0;
+            const tB = b.data.createdAt?.toMillis?.() || 0;
+            return sort === 'oldest' ? tA - tB : tB - tA;
+        });
 
-    </script>
+        renderRows(rows);
+    };
 
-<div class="image-modal" id="imageModal">
-  <span class="modal-close" onclick="closeImageModal()">&times;</span>
-  <div class="image-stage">
-    <img id="modalImg" class="modal-img">
-    <div id="zoomHint" class="zoom-hint">Scroll to zoom • Double-click to zoom • Drag to pan • Pinch to zoom</div>
-  </div>
-</div>
+    function renderRows(rows) {
+        const el = document.getElementById('reports');
+        if (!rows.length) {
+            const msgs = {
+                active:   'No active reports right now. 🎉',
+                resolved: 'No resolved reports yet.',
+                rejected: 'No rejected reports.',
+                all:      'No reports found.'
+            };
+            el.innerHTML = `<div class="empty-state"><div class="icon">${currentTab==='active'?'🎉':'📭'}</div><p>${msgs[currentTab]||'No reports found.'}</p></div>`;
+            return;
+        }
 
+        // Days since created helper
+        function daysSince(ts) {
+            if (!ts?.toMillis) return null;
+            return Math.floor((Date.now() - ts.toMillis()) / 86400000);
+        }
+
+        el.innerHTML = rows.map(r => {
+            const d = r.data;
+            const shortId = r.id.slice(0, 12).toUpperCase();
+            const cardClass = (d.status || '').toLowerCase().replace(' ', '-');
+            const days = daysSince(d.createdAt);
+            const isUrgent = d.status === 'Pending' && days !== null && days >= 3;
+            const dateStr = d.createdAt?.toDate ? d.createdAt.toDate().toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }) : 'Unknown date';
+
+            const photos = d.photos?.length
+                ? `<div class="photo-gallery">${d.photos.map(p =>
+                    `<img src="${p.url||p.data||p}" class="photo-thumb" onclick="openImageModal('${p.url||p.data||p}')" alt="Report photo">`
+                  ).join('')}</div>`
+                : '';
+
+            return `
+            <div class="report-card ${cardClass}">
+                <div class="report-card-top">
+                    <div>
+                        <div class="report-card-title">
+                            ${escapeHtml(d.category || 'No category')}
+                            ${isUrgent ? '<span class="urgent-tag">⚠️ Urgent</span>' : ''}
+                        </div>
+                        <div class="report-card-meta">
+                            <span class="meta-item">🪪 ${escapeHtml(d.studentId||'N/A')}</span>
+                            <span class="meta-item">👤 ${escapeHtml(d.name||'N/A')}</span>
+                            <span class="meta-item">📍 ${escapeHtml(d.location||'N/A')}</span>
+                            <span class="meta-item">📅 ${dateStr}${days!==null?' ('+days+' day'+(days!==1?'s':'')+' ago)':''}</span>
+                            <span class="meta-item">🆔 ${shortId}</span>
+                        </div>
+                    </div>
+                    <span class="badge badge-${cardClass==='in-progress'?'progress':cardClass}">${escapeHtml(d.status||'Pending')}</span>
+                </div>
+
+                <div class="report-card-body">${escapeHtml(d.description||'No description')}</div>
+
+                <div class="report-card-footer">
+                    ${photos}
+                    <div class="controls-col">
+                        <select class="status" onchange="updateStatus('${r.id}', this.value)">
+                            <option ${d.status==='Pending'?'selected':''}>Pending</option>
+                            <option ${d.status==='In Progress'?'selected':''}>In Progress</option>
+                            <option ${d.status==='Resolved'?'selected':''}>Resolved</option>
+                            <option ${d.status==='Rejected'?'selected':''}>Rejected</option>
+                        </select>
+                        <textarea class="resolution-area" id="resolution-${r.id}"
+                            placeholder="Add resolution notes…">${escapeHtml(d.resolution||'')}</textarea>
+                        <button class="btn-save" onclick="saveResolution('${r.id}')">💾 Save notes</button>
+                        <button class="btn-delete" onclick="deleteReport('${r.id}')">🗑 Delete report</button>
+                    </div>
+                </div>
+
+                ${d.history?.length ? `
+                <details style="margin-top:10px;font-size:12px;color:#64748b;">
+                    <summary style="cursor:pointer;font-weight:600;">Status history (${d.history.length})</summary>
+                    <div style="margin-top:6px;padding-left:12px;border-left:2px solid #e2e8f0;">
+                        ${d.history.map(h=>`<div style="margin-bottom:4px;"><strong>${h.status}</strong> — ${h.time}</div>`).join('')}
+                    </div>
+                </details>` : ''}
+            </div>`;
+        }).join('');
+    }
+
+    // ---- ACTIONS ----
+    window.updateStatus = async (id, status) => {
+        try {
+            const resolution = document.getElementById(`resolution-${id}`)?.value.trim() || '';
+            await updateDoc(doc(db, 'reports', id), {
+                status,
+                resolution,
+                history: arrayUnion({ status, time: new Date().toLocaleString('en-PH') })
+            });
+            await fetchAndRender();
+        } catch(e) { alert('Failed to update status.'); console.error(e); }
+    };
+
+    window.saveResolution = async (id) => {
+        try {
+            const notes = document.getElementById(`resolution-${id}`)?.value.trim();
+            await updateDoc(doc(db, 'reports', id), { resolution: notes });
+            // Small feedback without alert
+            const btn = event.target;
+            btn.textContent = '✓ Saved!';
+            setTimeout(() => btn.textContent = '💾 Save notes', 2000);
+        } catch(e) { alert('Failed to save notes.'); console.error(e); }
+    };
+
+    window.deleteReport = async (id) => {
+        if (!confirm('Delete this report permanently? This cannot be undone.')) return;
+        try {
+            await deleteDoc(doc(db, 'reports', id));
+            await fetchAndRender();
+        } catch(e) { alert('Failed to delete report.'); console.error(e); }
+    };
+
+    window.signOut = function() {
+        localStorage.removeItem('adminLoggedIn');
+        sessionStorage.clear();
+        location.replace('admin-login.html');
+    };
+
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, s =>
+            ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[s]);
+    }
+
+    // ---- AUTO REFRESH ----
+    window.toggleRefresh = function(on) {
+        if (refreshTimer) clearInterval(refreshTimer);
+        document.getElementById('refresh-status').textContent = on ? 'on' : 'off';
+        if (on) refreshTimer = setInterval(fetchAndRender, 15000);
+    };
+
+    // ---- IMAGE MODAL ----
+    const viewerState = {
+        scale:1, minScale:1, maxScale:5, x:0, y:0,
+        targetX:0, targetY:0, targetScale:1,
+        dragging:false, lastTap:0, startDistance:0, startScale:1,
+        raf:null, pointers: new Map()
+    };
+
+    function resetViewer() {
+        const img = document.getElementById('modalImg');
+        viewerState.scale = viewerState.targetScale = 1;
+        viewerState.x = viewerState.y = viewerState.targetX = viewerState.targetY = 0;
+        img.style.transform = 'translate(0px,0px) scale(1)';
+        img.classList.remove('dragging');
+    }
+
+    function clampPan() {
+        const img = document.getElementById('modalImg');
+        const rect = img.getBoundingClientRect();
+        const vw = window.innerWidth, vh = window.innerHeight;
+        const sw = (rect.width / viewerState.scale) * viewerState.targetScale;
+        const sh = (rect.height / viewerState.scale) * viewerState.targetScale;
+        const maxX = Math.max(0, (sw - vw) / 2);
+        const maxY = Math.max(0, (sh - vh) / 2);
+        viewerState.targetX = Math.min(maxX, Math.max(-maxX, viewerState.targetX));
+        viewerState.targetY = Math.min(maxY, Math.max(-maxY, viewerState.targetY));
+    }
+
+    function animateViewer() {
+        const img = document.getElementById('modalImg');
+        viewerState.scale += (viewerState.targetScale - viewerState.scale) * 0.18;
+        viewerState.x += (viewerState.targetX - viewerState.x) * 0.18;
+        viewerState.y += (viewerState.targetY - viewerState.y) * 0.18;
+        img.style.transform = `translate(${viewerState.x}px,${viewerState.y}px) scale(${viewerState.scale})`;
+        if (Math.abs(viewerState.scale - viewerState.targetScale) > 0.001 ||
+            Math.abs(viewerState.x - viewerState.targetX) > 0.1 ||
+            Math.abs(viewerState.y - viewerState.targetY) > 0.1) {
+            viewerState.raf = requestAnimationFrame(animateViewer);
+        } else { viewerState.raf = null; }
+    }
+
+    function requestAnim() { if (!viewerState.raf) viewerState.raf = requestAnimationFrame(animateViewer); }
+
+    function zoomAt(cx, cy, newScale) {
+        const prev = viewerState.targetScale;
+        newScale = Math.max(viewerState.minScale, Math.min(viewerState.maxScale, newScale));
+        const ox = cx - window.innerWidth / 2, oy = cy - window.innerHeight / 2;
+        viewerState.targetX = ox - (ox - viewerState.targetX) * (newScale / prev);
+        viewerState.targetY = oy - (oy - viewerState.targetY) * (newScale / prev);
+        viewerState.targetScale = newScale;
+        clampPan(); requestAnim();
+    }
+
+    window.openImageModal = function(src) {
+        const scrollY = window.scrollY;
+        document.body.dataset.scrollY = scrollY;
+        Object.assign(document.body.style, { position:'fixed', top:`-${scrollY}px`, left:'0', right:'0', width:'100%', overflow:'hidden' });
+        document.getElementById('modalImg').src = src;
+        document.getElementById('imageModal').classList.add('active');
+        resetViewer();
+        const hint = document.getElementById('zoomHint');
+        hint.style.opacity = '1';
+        clearTimeout(window.__hintTimer);
+        window.__hintTimer = setTimeout(() => hint.style.opacity = '0', 2500);
+    };
+
+    window.closeImageModal = function() {
+        document.getElementById('imageModal').classList.remove('active');
+        resetViewer();
+        const scrollY = parseInt(document.body.dataset.scrollY || '0', 10);
+        Object.assign(document.body.style, { position:'', top:'', left:'', right:'', width:'', overflow:'' });
+        window.scrollTo(0, scrollY);
+    };
+
+    document.addEventListener('click', e => {
+        const modal = document.getElementById('imageModal');
+        if (e.target === modal || e.target.classList.contains('image-stage')) closeImageModal();
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeImageModal(); });
+
+    const imgEl = document.getElementById('modalImg');
+    imgEl.addEventListener('wheel', e => { e.preventDefault(); zoomAt(e.clientX, e.clientY, viewerState.targetScale + (e.deltaY < 0 ? 0.25 : -0.25)); }, { passive: false });
+    imgEl.addEventListener('dblclick', e => {
+        if (viewerState.targetScale > 1) { viewerState.targetX = viewerState.targetY = viewerState.targetScale = 1; clampPan(); requestAnim(); }
+        else zoomAt(e.clientX, e.clientY, 3.5);
+    });
+
+    let startX = 0, startY = 0;
+    imgEl.addEventListener('pointerdown', e => {
+        viewerState.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (viewerState.targetScale > 1) { viewerState.dragging = true; imgEl.classList.add('dragging'); startX = e.clientX - viewerState.targetX; startY = e.clientY - viewerState.targetY; }
+    });
+    imgEl.addEventListener('pointermove', e => {
+        if (viewerState.pointers.has(e.pointerId)) viewerState.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (viewerState.pointers.size === 2) {
+            const pts = [...viewerState.pointers.values()];
+            const dist = Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y);
+            const cx = (pts[0].x+pts[1].x)/2, cy = (pts[0].y+pts[1].y)/2;
+            if (!viewerState.startDistance) { viewerState.startDistance = dist; viewerState.startScale = viewerState.targetScale; }
+            zoomAt(cx, cy, viewerState.startScale * (dist / viewerState.startDistance));
+        } else if (viewerState.dragging && viewerState.targetScale > 1) {
+            viewerState.targetX = e.clientX - startX; viewerState.targetY = e.clientY - startY;
+            clampPan(); requestAnim();
+        }
+    });
+    function endPointer(e) { viewerState.pointers.delete(e.pointerId); viewerState.dragging = false; imgEl.classList.remove('dragging'); if (viewerState.pointers.size < 2) viewerState.startDistance = 0; }
+    imgEl.addEventListener('pointerup', endPointer);
+    imgEl.addEventListener('pointercancel', endPointer);
+    imgEl.addEventListener('touchend', e => {
+        const now = Date.now();
+        if (now - viewerState.lastTap < 300) {
+            if (viewerState.targetScale > 1) { viewerState.targetX = viewerState.targetY = 0; viewerState.targetScale = 1; clampPan(); requestAnim(); }
+            else zoomAt(window.innerWidth/2, window.innerHeight/2, 2.5);
+        }
+        viewerState.lastTap = now;
+    });
+
+    // ---- INIT ----
+    fetchAndRender();
+    toggleRefresh(true);
+
+</script>
 <script src="ui.js"></script>
 </body>
 </html>
