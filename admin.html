@@ -270,7 +270,7 @@
         if (search) {
             rows = rows.filter(r => {
                 const d = r.data;
-                return (r.id + ' ' + (d.studentId||'') + ' ' + (d.name||'') + ' ' + (d.location||'') + ' ' + (d.category||''))
+                return (r.id + ' ' + (d.studentId||'') + ' ' + (d.location||'') + ' ' + (d.category||''))
                     .toLowerCase().includes(search);
             });
         }
@@ -330,7 +330,6 @@
                         </div>
                         <div class="report-card-meta">
                             <span class="meta-item">🪪 ${escapeHtml(d.studentId||'N/A')}</span>
-                            <span class="meta-item">👤 ${escapeHtml(d.name||'N/A')}</span>
                             <span class="meta-item">📍 ${escapeHtml(d.location||'N/A')}</span>
                             <span class="meta-item">📅 ${dateStr}${days!==null?' ('+days+' day'+(days!==1?'s':'')+' ago)':''}</span>
                             <span class="meta-item">🆔 ${shortId}</span>
