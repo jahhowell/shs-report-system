@@ -34,10 +34,14 @@
             padding:14px 10px;
         }
         .nav-item {
-            display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
-            background: transparent; border: none; color: rgba(255,255,255,0.75);
-            padding: 11px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500;
-            cursor: pointer; transition: background 0.15s, color 0.15s;
+            appearance:none;
+            -webkit-appearance:none;
+            display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+            background:transparent !important; border:none !important; outline:none !important;
+            box-shadow:none !important;
+            color:rgba(255,255,255,.75);
+            padding:11px 12px; border-radius:10px; font-size:13.5px; font-weight:500;
+            cursor:pointer; transition:background .15s,color .15s;
         }
         .nav-item .icon { font-size: 15px; width: 18px; text-align: center; }
         .nav-item .label { flex: 1; }
@@ -958,3 +962,4 @@
 <script src="ui.js"></script>
 </body>
 </html>
+<style>.nav-item:focus,.nav-item:focus-visible,.nav-item:active{background:rgba(255,255,255,.12)!important;outline:none!important;box-shadow:none!important}.nav-item::-moz-focus-inner{border:0}</style>
