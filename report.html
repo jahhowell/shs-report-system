@@ -359,7 +359,6 @@ photoInput?.addEventListener('change', async (e) => {
     try {
       const data = await compressImage(file);
 
-      selectedPhotos.push({ name: file.name, data });
 
       const div = document.createElement('div');
       div.className = 'preview-item';
@@ -418,8 +417,6 @@ document.getElementById('report-form').addEventListener('submit', async function
 
   const errors = [];
   if (!studentId)          errors.push('Student ID is required.');
-  if (name.length < 2)     errors.push('Full name is required.');
-  if (/\d/.test(name))     errors.push('Full name must not contain numbers.');
   if (!location)           errors.push('Please select a location.');
   if (!category)           errors.push('Please select an issue category.');
   if (description.length < 50)  errors.push('Description must be at least 50 characters.');
