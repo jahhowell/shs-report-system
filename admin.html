@@ -278,6 +278,13 @@
     import { collection, getDocs, doc, updateDoc, deleteDoc, arrayUnion }
         from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
+    // ---- EXPOSE FIREBASE TO WINDOW (needed for onclick handlers) ----
+    window._db = db;
+    window._updateDoc = updateDoc;
+    window._doc = doc;
+    window._deleteDoc = deleteDoc;
+    window._arrayUnion = arrayUnion;
+
     // ---- STATE ----
     let allRows    = [];
     let currentTab = 'active';
@@ -456,10 +463,10 @@
     window.updateStatus = async (id, status) => {
         try {
             const resolution = document.getElementById(`resolution-${id}`)?.value.trim() || '';
-            await updateDoc(doc(db, 'reports', id), {
+            await window._updateDoc(window._doc(window._db, 'reports', id), {
                 status,
                 resolution,
-                history: arrayUnion({ status, time: new Date().toLocaleString('en-PH') })
+                history: window._arrayUnion({ status, time: new Date().toLocaleString('en-PH') })
             });
             await fetchAndRender();
         } catch(e) { alert('Failed to update status.'); console.error(e); }
@@ -468,7 +475,7 @@
     window.saveResolution = async (id, btn) => {
         try {
             const notes = document.getElementById(`resolution-${id}`)?.value.trim();
-            await updateDoc(doc(db, 'reports', id), { resolution: notes });
+            await window._updateDoc(window._doc(window._db, 'reports', id), { resolution: notes });
             btn.textContent = '✓ Saved!';
             btn.style.background = '#166534';
             setTimeout(() => { btn.textContent = '💾 Save notes'; btn.style.background = ''; }, 2000);
@@ -478,7 +485,7 @@
     window.deleteReport = async (id) => {
         if (!confirm('Delete this report permanently? This cannot be undone.')) return;
         try {
-            await deleteDoc(doc(db, 'reports', id));
+            await window._deleteDoc(window._doc(window._db, 'reports', id));
             await fetchAndRender();
         } catch(e) { alert('Failed to delete report.'); console.error(e); }
     };
