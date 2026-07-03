@@ -143,15 +143,9 @@
       <div class="alert alert-error" id="error-box"></div>
 
       <form id="report-form" novalidate>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="studentId">Student ID <span class="req">*</span></label>
-            <input type="text" id="studentId" placeholder="Student ID" maxlength="20" />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="name">Full name <span class="req">*</span></label>
-            <input type="text" id="name" placeholder="Your full name" />
-          </div>
+        <div class="form-group">
+          <label class="form-label" for="studentId">Student ID <span class="req">*</span></label>
+          <input type="text" id="studentId" placeholder="Student ID" maxlength="20" />
         </div>
 
         <div class="form-row">
@@ -388,7 +382,6 @@ photoInput?.addEventListener('change', async (e) => {
 function saveDraft(){
   const draft={
     studentId:document.getElementById('studentId').value,
-    name:document.getElementById('name').value,
     location:document.getElementById('location').value,
     category:document.getElementById('category').value,
     description:document.getElementById('description').value
@@ -400,20 +393,12 @@ const draft=JSON.parse(localStorage.getItem('reportDraft')||'null');
 
 if(draft){
  document.getElementById('studentId').value=draft.studentId||'';
- document.getElementById('name').value=draft.name||'';
  document.getElementById('location').value=draft.location||'';
  document.getElementById('category').value=draft.category||'';
  document.getElementById('description').value=draft.description||'';
- updateCounter();
- // Show a small toast that draft was restored
- const toast = document.createElement('div');
- toast.textContent = '📝 Draft restored';
- toast.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#07294d;color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;z-index:9999;opacity:1;transition:opacity 0.5s';
- document.body.appendChild(toast);
- setTimeout(()=>{ toast.style.opacity='0'; setTimeout(()=>toast.remove(),500); }, 2500);
 }
 
-['studentId','name','location','category','description'].forEach(id=>{
+['studentId','location','category','description'].forEach(id=>{
  document.getElementById(id)?.addEventListener('input',saveDraft);
  document.getElementById(id)?.addEventListener('change',saveDraft);
 });
@@ -427,7 +412,6 @@ document.getElementById('report-form').addEventListener('submit', async function
   errBox.style.display = 'none';
 
   const studentId   = document.getElementById('studentId').value.trim();
-  const name        = document.getElementById('name').value.trim();
   const location    = document.getElementById('location').value;
   const category    = document.getElementById('category').value;
   const description = document.getElementById('description').value.trim();
@@ -479,7 +463,6 @@ document.getElementById('report-form').addEventListener('submit', async function
   try {
     const docRef = await addDoc(collection(db, 'reports'), {
       studentId,
-      name,
       location,
       category,
       description,
