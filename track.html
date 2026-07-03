@@ -120,11 +120,14 @@
 
 <h4>Progress Timeline</h4>
 <div class="timeline">
-${(data.history || []).map(h =>
-`<div class="timeline-item">
-<strong>${h.status}</strong><br>
-<span style="font-size:13px;color:#64748b">${h.time}</span>
-</div>`).join('')}
+${(data.history && data.history.length > 0)
+  ? data.history.map(h =>
+    `<div class="timeline-item">
+    <strong>${h.status}</strong><br>
+    <span style="font-size:13px;color:#64748b">${h.time}</span>
+    </div>`).join('')
+  : `<div class="timeline-item"><span style="color:#64748b;font-size:13px">No status updates yet. Check back soon.</span></div>`
+}
 </div>
 
 <h4 style="margin-top:20px">Resolution Notes</h4>

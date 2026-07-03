@@ -156,47 +156,53 @@
         const reportsEl = document.getElementById('reports');
 let allRows = [];
 
-        async function renderReports(){
+        async function fetchAndRender(){
             reportsEl.innerHTML = 'Loading…';
             try{
                 const snap = await getDocs(collection(db, 'reports'));
-                if(snap.empty){ reportsEl.innerHTML = '<div class="small">No reports yet.</div>'; return; }
+                if(snap.empty){ reportsEl.innerHTML = '<div class="small">No reports yet.</div>'; allRows=[]; updateStats([]); return; }
 
                 const rows = [];
                 snap.forEach(d => rows.push({ id: d.id, data: d.data() }));
 
-                // Sort by createdAt descending (newest first)
                 rows.sort((a, b) => {
                   const timeA = a.data.createdAt?.toMillis?.() || 0;
                   const timeB = b.data.createdAt?.toMillis?.() || 0;
                   return timeB - timeA;
                 });
 
-                
-allRows = rows;
+                allRows = rows;
+                updateStats(rows);
+                applyFilters();
 
-document.getElementById('totalCount').textContent = rows.length;
-document.getElementById('pendingCount').textContent = rows.filter(r=>r.data.status==='Pending').length;
-document.getElementById('progressCount').textContent = rows.filter(r=>r.data.status==='In Progress').length;
-document.getElementById('resolvedCount').textContent = rows.filter(r=>r.data.status==='Resolved').length;
-document.getElementById('rejectedCount').textContent = rows.filter(r=>r.data.status==='Rejected').length;
+            } catch(err){
+                reportsEl.innerHTML = '<div class="small">Failed to load reports.</div>';
+                console.error(err);
+            }
+        }
 
-const searchTerm=(document.getElementById('searchBox')?.value||'').toLowerCase();
-const statusFilter=(document.getElementById('statusFilter')?.value||'All');
+        function updateStats(rows){
+            document.getElementById('totalCount').textContent = rows.length;
+            document.getElementById('pendingCount').textContent = rows.filter(r=>r.data.status==='Pending').length;
+            document.getElementById('progressCount').textContent = rows.filter(r=>r.data.status==='In Progress').length;
+            document.getElementById('resolvedCount').textContent = rows.filter(r=>r.data.status==='Resolved').length;
+            document.getElementById('rejectedCount').textContent = rows.filter(r=>r.data.status==='Rejected').length;
+        }
 
-const filteredRows=rows.filter(r=>{
- const d=r.data;
- const txt=(r.id+' '+(d.studentId||'')+' '+(d.name||'')+' '+(d.location||'')).toLowerCase();
- const searchMatch=txt.includes(searchTerm);
- const statusMatch=statusFilter==='All'||d.status===statusFilter;
- return searchMatch && statusMatch;
-});
+        function applyFilters(){
+            const searchTerm=(document.getElementById('searchBox')?.value||'').toLowerCase();
+            const statusFilter=(document.getElementById('statusFilter')?.value||'All');
+            const rows = allRows.filter(r=>{
+                const d=r.data;
+                const txt=(r.id+' '+(d.studentId||'')+' '+(d.name||'')+' '+(d.location||'')).toLowerCase();
+                return txt.includes(searchTerm) && (statusFilter==='All'||d.status===statusFilter);
+            });
 
-rows.length=0;
-rows.push(...filteredRows);
+        async function renderReports(){ applyFilters(); }
 
-// render
-                reportsEl.innerHTML = rows.map(r => {
+                if(!rows.length){ reportsEl.innerHTML='<div class="small">No reports match your search.</div>'; return; }
+
+            reportsEl.innerHTML = rows.map(r => {
                     const data = r.data;
                     const shortId = r.id.slice(0,12).toUpperCase();
                     const photo = data.photos?.length ? `<div class="photo-gallery">${data.photos.map(p=>`<img src="${p.url || p.data || p}" class="photo-thumb" onclick="openImageModal('${p.url || p.data || p}')">`).join('')}</div>` : '';
@@ -272,7 +278,7 @@ ${escapeHtml(data.description || 'No description')}
                         time: new Date().toLocaleString()
                     })
                 });
-                await renderReports();
+                await fetchAndRender();
             }catch(e){ alert('Failed to update status'); console.error(e); }
         };
 
@@ -294,7 +300,7 @@ window.deleteReport = async (id) => {
             if (!confirm('Delete this report permanently?')) return;
             try{
                 await deleteDoc(doc(db, 'reports', id));
-                await renderReports();
+                await fetchAndRender();
             }catch(e){
                 alert('Failed to delete report');
                 console.error(e);
@@ -515,7 +521,7 @@ imgEl.addEventListener('touchend', e => {
 
         function startAutoRefresh(){
           if(refreshTimer) clearInterval(refreshTimer);
-          refreshTimer = setInterval(renderReports,12000);
+          refreshTimer = setInterval(fetchAndRender,12000);
           document.getElementById('refresh-status').textContent='on';
         }
 
@@ -537,13 +543,13 @@ imgEl.addEventListener('touchend', e => {
 
         
 document.addEventListener('input',e=>{
- if(e.target.id==='searchBox') renderReports();
+ if(e.target.id==='searchBox') applyFilters();
 });
 document.addEventListener('change',e=>{
- if(e.target.id==='statusFilter') renderReports();
+ if(e.target.id==='statusFilter') applyFilters();
 });
 
-renderReports();
+fetchAndRender();
 startAutoRefresh();
 
 

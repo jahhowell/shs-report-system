@@ -4,13 +4,13 @@ import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-
 
 // Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyC7DmpN682PT__RhPkgRu2_wxpOclKow",
+  apiKey: "AIzaSyCpmDpN68ZPT__RhPkgRr0Z_wxwpOetWow",
   authDomain: "shs-report-system.firebaseapp.com",
   projectId: "shs-report-system",
-  storageBucket: "shs-report-system.appspot.com",
-  messagingSenderId: "381807513816",
-  appId: "1:381807513816:web:e826c08bed6538907d934d",
-  measurementId: "G-7ND8SN37JB"
+  storageBucket: "shs-report-system.firebasestorage.app",
+  messagingSenderId: "381807513016",
+  appId: "1:381807513016:web:e826c08bed6538907e934d",
+  measurementId: "G-7NDR5N3738"
 };
 
 // Initialize Firebase
