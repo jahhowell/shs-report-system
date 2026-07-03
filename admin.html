@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admin Dashboard – SHS-AdC</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        :root {
+            --shs-navy: #07294d;
+            --surface: #f7f8fb;
+        }
+        html, body { height: 100%; width: 100%; }
+        body { background: var(--surface); margin: 0; }
+
+        /* ===== APP SHELL ===== */
+        .app-shell { display: flex; min-height: 100vh; width: 100%; }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 240px; flex-shrink: 0; background: var(--shs-navy); color: #fff;
+            display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
+        }
+        .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+        .sidebar-brand picture, .sidebar-brand img { width: 34px; height: 34px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+        .sidebar-brand .titles { line-height: 1.25; }
+        .sidebar-brand .titles .t1 { font-weight: 700; font-size: 13px; }
+        .sidebar-brand .titles .t2 { font-size: 11px; color: rgba(255,255,255,0.65); }
+
+        .sidebar-nav { flex: 1; padding: 14px 10px; display: flex; flex-direction: column; gap: 3px; overflow-y: auto; }
+        .nav-item {
+            display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+            background: transparent; border: none; color: rgba(255,255,255,0.75);
+            padding: 11px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500;
+            cursor: pointer; transition: background 0.15s, color 0.15s;
+        }
+        .nav-item .icon { font-size: 15px; width: 18px; text-align: center; }
+        .nav-item .label { flex: 1; }
+        .nav-item .nav-badge {
+            background: rgba(255,255,255,0.15); color: #fff; font-size: 10.5px; font-weight: 700;
+            padding: 1px 7px; border-radius: 20px; min-width: 18px; text-align: center;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .nav-item.active { background: #fff; color: var(--shs-navy); }
+        .nav-item.active .nav-badge { background: rgba(7,41,77,0.1); color: var(--shs-navy); }
+        .nav-divider { height: 1px; background: rgba(255,255,255,0.12); margin: 8px 6px; }
+
+        .sidebar-footer { padding: 12px 10px 16px; border-top: 1px solid rgba(255,255,255,0.12); display: flex; flex-direction: column; gap: 6px; }
+        .sidebar-footer button {
+            display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+            background: transparent; border: 1px solid rgba(255,255,255,0.18); color: #fff;
+            padding: 9px 12px; border-radius: 9px; font-size: 12.5px; cursor: pointer;
+        }
+        .sidebar-footer button:hover { background: rgba(255,255,255,0.1); }
+        .sidebar-footer button.signout { background: #fff; color: var(--shs-navy); font-weight: 700; border-color: #fff; }
+        .sidebar-footer button.signout:hover { opacity: 0.9; }
+
+        /* ===== MAIN ===== */
+        .main-content { flex: 1; min-width: 0; width: 100%; padding: 22px 26px 60px; }
+        .content-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .content-topbar h1 { font-size: 20px; margin: 0; color: var(--shs-navy); }
+        .content-topbar .sub { font-size: 12.5px; color: #64748b; margin-top: 2px; }
+
+        .page { display: none; }
+        .page.active { display: block; animation: pageFadeIn 0.3s ease both; }
+
+        /* ===== STATS ===== */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: #fff; padding: 16px; border-radius: 12px; text-align: center; box-shadow: 0 4px 14px rgba(20,30,60,.06); cursor: pointer; transition: transform 0.18s, box-shadow 0.18s; border: 2px solid transparent; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(20,30,60,.10); }
+        .stat-num { font-size: 26px; font-weight: 700; color: var(--shs-navy); }
+        .stat-num.pending  { color: #92660a; }
+        .stat-num.progress { color: #1447a0; }
+        .stat-num.resolved { color: #166534; }
+        .stat-num.rejected { color: #991b1b; }
+        .stat-label { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+        /* ===== DASHBOARD EXTRAS ===== */
+        .dash-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; align-items: start; }
+        @media (max-width: 880px) { .dash-grid { grid-template-columns: 1fr; } }
+        .panel { background: #fff; border-radius: 12px; padding: 18px; box-shadow: 0 4px 14px rgba(20,30,60,.06); }
+        .panel h3 { font-size: 14px; margin: 0 0 12px; color: var(--shs-navy); }
+        .mini-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        .mini-row:last-child { border-bottom: none; }
+        .mini-row .mr-title { font-weight: 600; color: var(--shs-navy); }
+        .mini-row .mr-meta { color: #94a3b8; font-size: 11.5px; }
+        .alert-panel { border-left: 4px solid #ef4444; background: #fff8f8; }
+        .alert-panel h3 { color: #991b1b; }
+
+        /* ===== TABS ===== */
+        .tabs { display: flex; gap: 4px; margin-bottom: 16px; background: #fff; padding: 6px; border-radius: 12px; box-shadow: 0 4px 14px rgba(20,30,60,.06); }
+        .tab-btn { flex: 1; padding: 9px 12px; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; background: transparent; color: #64748b; transition: all 0.18s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .tab-btn:hover { background: #f1f5f9; color: var(--shs-navy); }
+        .tab-btn.active { background: var(--shs-navy); color: #fff; }
+        .tab-badge { background: rgba(255,255,255,0.25); color: inherit; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 20px; min-width: 20px; text-align: center; }
+        .tab-btn:not(.active) .tab-badge { background: #e2e8f0; color: #475569; }
+
+        /* ===== SEARCH BAR ===== */
+        .search-bar { background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(20,30,60,.06); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .search-bar input { flex: 1; min-width: 160px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 12px; font-size: 14px; outline: none; transition: border-color 0.15s; }
+        .search-bar input:focus { border-color: var(--shs-navy); }
+        .search-bar .sort-select { border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 12px; font-size: 13px; color: var(--shs-navy); background: #f8fafc; outline: none; cursor: pointer; }
+        .refresh-label { font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+
+        /* ===== REPORT CARDS ===== */
+        .reports-list { display: flex; flex-direction: column; gap: 12px; }
+        .report-card { background: #fff; border-radius: 12px; padding: 16px 18px; box-shadow: 0 4px 14px rgba(20,30,60,.06); border-left: 4px solid #e2e8f0; transition: transform 0.18s; }
+        .report-card:hover { transform: translateY(-1px); }
+        .report-card.pending  { border-left-color: #f0c808; }
+        .report-card.in-progress { border-left-color: #3b82f6; }
+        .report-card.resolved { border-left-color: #22c55e; }
+        .report-card.rejected { border-left-color: #ef4444; }
+        .report-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+        .report-card-title { font-size: 15px; font-weight: 600; color: var(--shs-navy); margin: 0 0 4px; }
+        .report-card-meta { font-size: 12px; color: #64748b; display: flex; flex-wrap: wrap; gap: 10px; }
+        .meta-item { display: flex; align-items: center; gap: 4px; }
+        .report-card-body { font-size: 13px; color: #334155; margin: 10px 0; line-height: 1.6; background: #f8fafc; border-radius: 8px; padding: 10px 12px; }
+        .report-card-footer { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+        .photo-gallery { display: flex; gap: 6px; flex-wrap: wrap; }
+        .photo-thumb { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; transition: transform 0.15s; }
+        .photo-thumb:hover { transform: scale(1.05); }
+        .controls-col { display: flex; flex-direction: column; gap: 6px; min-width: 180px; flex: 1; }
+        select.status { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 13px; background: #f8fafc; color: var(--shs-navy); cursor: pointer; }
+        .resolution-area { width: 100%; min-height: 70px; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; resize: vertical; font-family: inherit; }
+        .btn-save { background: var(--shs-navy); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; }
+        .btn-save:hover { opacity: 0.85; }
+        .btn-delete { background: #fff; color: #dc2626; border: 1px solid #fca5a5; border-radius: 8px; padding: 6px 14px; font-size: 12px; cursor: pointer; width: 100%; }
+        .btn-delete:hover { background: #fef2f2; }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state { text-align: center; padding: 48px 20px; color: #94a3b8; }
+        .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+        .empty-state p { font-size: 14px; }
+
+        /* ===== URGENCY BADGE ===== */
+        .urgent-tag { background: #fef2f2; color: #dc2626; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; border: 1px solid #fca5a5; }
+
+        /* ===== IMAGE MODAL ===== */
+        .image-modal { position: fixed; inset: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,.96); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 9999; overflow: hidden; touch-action: none; }
+        .image-modal.active { display: flex; }
+        .image-stage { position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .modal-img { max-width: 95vw; max-height: 95vh; object-fit: contain; will-change: transform; transform-origin: center center; cursor: grab; user-select: none; -webkit-user-drag: none; touch-action: none; }
+        .modal-img.dragging { cursor: grabbing; }
+        .zoom-hint { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,.45); padding: 10px 14px; border-radius: 999px; font-size: 13px; backdrop-filter: blur(8px); z-index: 10001; opacity: 1; transition: opacity .4s; pointer-events: none; }
+        .modal-close { position: absolute; top: 20px; right: 25px; color: white; font-size: 32px; cursor: pointer; z-index: 10000; }
+
+        /* ===== SETTINGS PAGE ===== */
+        .setting-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f1f5f9; }
+        .setting-row:last-child { border-bottom: none; }
+        .setting-label { font-size: 14px; color: #334155; font-weight: 500; }
+        .setting-desc { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+        .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; inset: 0; background: #cbd5e1; border-radius: 24px; cursor: pointer; transition: background 0.2s; }
+        .toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform 0.2s; box-shadow:0 1px 4px rgba(0,0,0,0.2); }
+        .toggle input:checked + .toggle-slider { background: #07294d; }
+        .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+        /* ===== ANALYTICS ===== */
+        .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+        .chart-card { background: #fff; border-radius: 12px; padding: 18px; box-shadow: 0 4px 14px rgba(20,30,60,.06); }
+        .chart-card h3 { font-size: 14px; margin: 0 0 14px; color: var(--shs-navy); }
+        .chart-wrap { position: relative; height: 230px; }
+        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+        .kpi-card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 4px 14px rgba(20,30,60,.06); }
+        .kpi-num { font-size: 22px; font-weight: 700; color: var(--shs-navy); }
+        .kpi-label { font-size: 11.5px; color: #64748b; margin-top: 2px; }
+
+        /* ===== DARK MODE ===== */
+        body.dark-mode { background: #0f172a !important; color: #e2e8f0 !important; }
+        body.dark-mode .sidebar { background: #060f1e; }
+        body.dark-mode .stat-card, body.dark-mode .tabs, body.dark-mode .search-bar,
+        body.dark-mode .report-card, body.dark-mode .panel, body.dark-mode .chart-card,
+        body.dark-mode .kpi-card, body.dark-mode .card { background: #1e293b !important; border-color: #334155 !important; box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important; }
+        body.dark-mode .stat-label, body.dark-mode .kpi-label, body.dark-mode .mr-meta { color: #94a3b8; }
+        body.dark-mode .tab-btn { color: #94a3b8; }
+        body.dark-mode .tab-btn:hover { background: #334155; color: #e2e8f0; }
+        body.dark-mode .tab-btn.active { background: #07294d; color: #fff; }
+        body.dark-mode .tab-btn:not(.active) .tab-badge { background: #334155; color: #94a3b8; }
+        body.dark-mode .search-bar input, body.dark-mode .sort-select, body.dark-mode select.status,
+        body.dark-mode .resolution-area { background: #0f172a !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+        body.dark-mode .report-card-body { background: #0f172a; color: #cbd5e1; }
+        body.dark-mode .report-card-meta { color: #94a3b8; }
+        body.dark-mode .report-card-title, body.dark-mode .content-topbar h1,
+        body.dark-mode .panel h3, body.dark-mode .chart-card h3, body.dark-mode .kpi-num,
+        body.dark-mode .mr-title { color: #e2e8f0; }
+        body.dark-mode .setting-label { color: #cbd5e1; }
+        body.dark-mode .setting-row { border-color: #334155; }
+        body.dark-mode .btn-save { background: #1e40af; }
+        body.dark-mode .btn-delete { background: #1e293b; border-color: #7f1d1d; color: #fca5a5; }
+        body.dark-mode .empty-state { color: #64748b; }
+        body.dark-mode details summary { color: #94a3b8; }
+        body.dark-mode .refresh-label, body.dark-mode .content-topbar .sub { color: #94a3b8; }
+        body.dark-mode .mini-row { border-color: #334155; }
+
+        @media (max-width: 900px) {
+            .app-shell { flex-direction: column; }
+            .sidebar {
+                width: 100%; height: auto; min-height: 0; position: sticky; top: 0;
+                flex-direction: column; align-items: stretch; z-index: 200;
+            }
+            .sidebar-brand { border-bottom: 1px solid rgba(255,255,255,0.12); padding: 10px 14px; }
+            .sidebar-brand .titles .t1 { font-size: 13.5px; }
+            .sidebar-brand .titles .t2 { font-size: 11px; }
+            .sidebar-nav {
+                flex-direction: row; flex: none; padding: 6px 8px; gap: 4px;
+                overflow-x: auto; -webkit-overflow-scrolling: touch;
+            }
+            .nav-item {
+                flex-direction: row; flex: none; width: auto; gap: 6px;
+                padding: 8px 12px; white-space: nowrap; font-size: 13px;
+            }
+            .nav-item .icon { font-size: 14px; width: auto; }
+            .nav-item .label { font-size: 13px; }
+            .nav-divider { display: none; }
+            .sidebar-footer {
+                flex-direction: row; border-top: 1px solid rgba(255,255,255,0.12);
+                padding: 8px; gap: 8px;
+            }
+            .sidebar-footer button { width: auto; flex: 1; justify-content: center; padding: 9px 10px; }
+            .sidebar-footer button .label { display: inline; font-size: 12px; }
+
+            .main-content { padding: 14px; }
+            .content-topbar h1 { font-size: 18px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-card { padding: 12px; }
+            .stat-num { font-size: 21px; }
+            .stat-label { font-size: 11px; }
+        }
+        @media (max-width: 640px) {
+            .report-card-footer { flex-direction: column; }
+            .tabs { flex-wrap: wrap; }
+        }
+        @media (max-width: 420px) {
+            .nav-item .label { display: none; }
+            .nav-item { padding: 9px; }
+            .nav-item .icon { font-size: 16px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <picture>
+                <source srcset="assets/crest.png" type="image/png">
+                <img src="assets/crest.svg" alt="SHS crest" />
+            </picture>
+            <div class="titles">
+                <div class="t1">SHS-AdC Admin</div>
+                <div class="t2">Maintenance Dashboard</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <button class="nav-item active" id="nav-dashboard" onclick="goToPage('dashboard')">
+                <span class="icon">📊</span><span class="label">Dashboard</span>
+            </button>
+            <button class="nav-item" id="nav-reports" onclick="goToPage('reports')">
+                <span class="icon">📋</span><span class="label">Reports</span>
+                <span class="nav-badge" id="navBadgeReports">0</span>
+            </button>
+            <button class="nav-item" id="nav-analytics" onclick="goToPage('analytics')">
+                <span class="icon">📈</span><span class="label">Analytics</span>
+            </button>
+            <div class="nav-divider"></div>
+            <button class="nav-item" id="nav-settings" onclick="goToPage('settings')">
+                <span class="icon">⚙️</span><span class="label">Settings</span>
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button onclick="location.href='index.html'"><span class="icon">🔗</span><span class="label">View site</span></button>
+            <button class="signout" onclick="signOut()"><span class="icon">🚪</span><span class="label">Sign out</span></button>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+        <!-- ===== DASHBOARD ===== -->
+        <section id="page-dashboard" class="page active">
+            <div class="content-topbar">
+                <div>
+                    <h1>Dashboard</h1>
+                    <div class="sub">Overview of all facility reports</div>
+                </div>
+                <div class="refresh-label">🔄 Auto-refresh every 15s</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card" onclick="goToPage('reports'); setTab('all')">
+                    <div class="stat-num" id="totalCount">0</div>
+                    <div class="stat-label">Total Reports</div>
+                </div>
+                <div class="stat-card" onclick="goToPage('reports'); setTab('active'); setStatusFilter('Pending')">
+                    <div class="stat-num pending" id="pendingCount">0</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-card" onclick="goToPage('reports'); setTab('active'); setStatusFilter('In Progress')">
+                    <div class="stat-num progress" id="progressCount">0</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+                <div class="stat-card" onclick="goToPage('reports'); setTab('resolved')">
+                    <div class="stat-num resolved" id="resolvedCount">0</div>
+                    <div class="stat-label">Resolved</div>
+                </div>
+                <div class="stat-card" onclick="goToPage('reports'); setTab('rejected')">
+                    <div class="stat-num rejected" id="rejectedCount">0</div>
+                    <div class="stat-label">Rejected</div>
+                </div>
+            </div>
+
+            <div class="dash-grid">
+                <div class="panel">
+                    <h3>🕓 Recent reports</h3>
+                    <div id="recentList"><div class="empty-state"><div class="icon">⏳</div><p>Loading…</p></div></div>
+                </div>
+                <div class="panel alert-panel">
+                    <h3>⚠️ Needs attention</h3>
+                    <div id="urgentList"><div class="empty-state"><div class="icon">⏳</div><p>Loading…</p></div></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== REPORTS ===== -->
+        <section id="page-reports" class="page">
+            <div class="content-topbar">
+                <div>
+                    <h1>Reports</h1>
+                    <div class="sub">All submitted facility reports</div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" id="tab-active" onclick="setTab('active')">
+                    🔴 Active <span class="tab-badge" id="badge-active">0</span>
+                </button>
+                <button class="tab-btn" id="tab-resolved" onclick="setTab('resolved')">
+                    ✅ Resolved <span class="tab-badge" id="badge-resolved">0</span>
+                </button>
+                <button class="tab-btn" id="tab-rejected" onclick="setTab('rejected')">
+                    ❌ Rejected <span class="tab-badge" id="badge-rejected">0</span>
+                </button>
+                <button class="tab-btn" id="tab-all" onclick="setTab('all')">
+                    📋 All <span class="tab-badge" id="badge-all">0</span>
+                </button>
+            </div>
+
+            <div class="search-bar">
+                <input id="searchBox" placeholder="Search by name, ID, location, category…" oninput="applyFilters()" />
+                <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+                    <option value="newest">Newest first</option>
+                    <option value="oldest">Oldest first</option>
+                    <option value="urgency">By urgency</option>
+                </select>
+            </div>
+
+            <div class="reports-list" id="reports">
+                <div class="empty-state"><div class="icon">⏳</div><p>Loading reports…</p></div>
+            </div>
+        </section>
+
+        <!-- ===== ANALYTICS ===== -->
+        <section id="page-analytics" class="page">
+            <div class="content-topbar">
+                <div>
+                    <h1>Analytics</h1>
+                    <div class="sub">Trends across all submitted reports</div>
+                </div>
+            </div>
+
+            <div class="kpi-row">
+                <div class="kpi-card"><div class="kpi-num" id="kpiTotal">0</div><div class="kpi-label">Total reports</div></div>
+                <div class="kpi-card"><div class="kpi-num" id="kpiResolvedPct">0%</div><div class="kpi-label">Resolved rate</div></div>
+                <div class="kpi-card"><div class="kpi-num" id="kpiAvgDays">–</div><div class="kpi-label">Avg. days to resolve</div></div>
+                <div class="kpi-card"><div class="kpi-num" id="kpiUrgent">0</div><div class="kpi-label">Urgent (pending 3+ days)</div></div>
+            </div>
+
+            <div class="analytics-grid">
+                <div class="chart-card">
+                    <h3>Status distribution</h3>
+                    <div class="chart-wrap"><canvas id="chartStatus"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <h3>Reports by category</h3>
+                    <div class="chart-wrap"><canvas id="chartCategory"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <h3>Reports by location</h3>
+                    <div class="chart-wrap"><canvas id="chartLocation"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <h3>Reports over the last 14 days</h3>
+                    <div class="chart-wrap"><canvas id="chartTrend"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SETTINGS ===== -->
+        <section id="page-settings" class="page">
+            <div class="content-topbar">
+                <div>
+                    <h1>Settings</h1>
+                    <div class="sub">Dashboard preferences</div>
+                </div>
+            </div>
+
+            <div class="panel" style="max-width:480px">
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">🌙 Dark mode</div>
+                        <div class="setting-desc">Easier on the eyes at night</div>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode(this.checked)" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">🔄 Auto-refresh</div>
+                        <div class="setting-desc">Reload reports every 15 seconds</div>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="refresh-toggle" checked onchange="toggleRefresh(this.checked)" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<!-- IMAGE MODAL -->
+<div class="image-modal" id="imageModal">
+    <span class="modal-close" onclick="closeImageModal()">&times;</span>
+    <div class="image-stage">
+        <img id="modalImg" class="modal-img" alt="Report photo">
+        <div id="zoomHint" class="zoom-hint">Scroll to zoom · Double-click to zoom · Drag to pan · Pinch to zoom</div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script type="module">
+    // ---- AUTH GUARD ----
+    if (localStorage.getItem('adminLoggedIn') !== 'true') location.href = 'admin-login.html';
+
+    import { db } from './firebase.js';
+    import { collection, getDocs, doc, updateDoc, deleteDoc, arrayUnion }
+        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    window._db = db;
+    window._updateDoc = updateDoc;
+    window._doc = doc;
+    window._deleteDoc = deleteDoc;
+    window._arrayUnion = arrayUnion;
+
+    // ---- STATE ----
+    let allRows    = [];
+    let currentTab = 'active';
+    let currentPage = 'dashboard';
+    let refreshTimer = null;
+    let charts = {};
+
+    // ---- HELPERS ----
+    function daysSince(ts) {
+        if (!ts?.toMillis) return null;
+        return Math.floor((Date.now() - ts.toMillis()) / 86400000);
+    }
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, s =>
+            ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[s]);
+    }
+
+    // ---- NAVIGATION ----
+    window.goToPage = function(page) {
+        currentPage = page;
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + page)?.classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('nav-' + page)?.classList.add('active');
+        if (page === 'analytics') renderAnalytics();
+    };
+
+    // ---- FETCH FROM FIRESTORE ----
+    async function fetchAndRender() {
+        try {
+            const snap = await getDocs(collection(db, 'reports'));
+            const rows = [];
+            snap.forEach(d => rows.push({ id: d.id, data: d.data() }));
+            allRows = rows;
+            updateStats(rows);
+            updateBadges(rows);
+            renderDashboard(rows);
+            applyFilters();
+            if (currentPage === 'analytics') renderAnalytics();
+        } catch (err) {
+            document.getElementById('reports').innerHTML =
+                '<div class="empty-state"><div class="icon">⚠️</div><p>Failed to load reports. Check your connection.</p></div>';
+            console.error(err);
+        }
+    }
+
+    // ---- STATS ----
+    function updateStats(rows) {
+        document.getElementById('totalCount').textContent    = rows.length;
+        document.getElementById('pendingCount').textContent  = rows.filter(r => r.data.status === 'Pending').length;
+        document.getElementById('progressCount').textContent = rows.filter(r => r.data.status === 'In Progress').length;
+        document.getElementById('resolvedCount').textContent = rows.filter(r => r.data.status === 'Resolved').length;
+        document.getElementById('rejectedCount').textContent = rows.filter(r => r.data.status === 'Rejected').length;
+    }
+
+    function updateBadges(rows) {
+        const active   = rows.filter(r => r.data.status === 'Pending' || r.data.status === 'In Progress').length;
+        const resolved = rows.filter(r => r.data.status === 'Resolved').length;
+        const rejected = rows.filter(r => r.data.status === 'Rejected').length;
+        document.getElementById('badge-active').textContent   = active;
+        document.getElementById('badge-resolved').textContent = resolved;
+        document.getElementById('badge-rejected').textContent = rejected;
+        document.getElementById('badge-all').textContent      = rows.length;
+        document.getElementById('navBadgeReports').textContent = active;
+    }
+
+    // ---- DASHBOARD ----
+    function renderDashboard(rows) {
+        const recent = [...rows].sort((a,b) => (b.data.createdAt?.toMillis?.()||0) - (a.data.createdAt?.toMillis?.()||0)).slice(0,5);
+        const recentEl = document.getElementById('recentList');
+        recentEl.innerHTML = recent.length ? recent.map(r => {
+            const d = r.data;
+            const dateStr = d.createdAt?.toDate ? d.createdAt.toDate().toLocaleDateString('en-PH', { month:'short', day:'numeric' }) : '—';
+            return `<div class="mini-row">
+                <div><div class="mr-title">${escapeHtml(d.category||'No category')}</div><div class="mr-meta">${escapeHtml(d.location||'N/A')} · ${dateStr}</div></div>
+                <span class="badge badge-${(d.status||'pending').toLowerCase().replace(' ','')==='inprogress'?'progress':(d.status||'').toLowerCase()}">${escapeHtml(d.status||'Pending')}</span>
+            </div>`;
+        }).join('') : `<div class="empty-state"><div class="icon">📭</div><p>No reports yet.</p></div>`;
+
+        const urgent = rows.filter(r => r.data.status === 'Pending' && (daysSince(r.data.createdAt)||0) >= 3);
+        const urgentEl = document.getElementById('urgentList');
+        urgentEl.innerHTML = urgent.length ? urgent.slice(0,5).map(r => {
+            const d = r.data;
+            const days = daysSince(d.createdAt);
+            return `<div class="mini-row">
+                <div><div class="mr-title">${escapeHtml(d.category||'No category')}</div><div class="mr-meta">${escapeHtml(d.location||'N/A')} · pending ${days} day${days!==1?'s':''}</div></div>
+                <span class="urgent-tag">⚠️ Urgent</span>
+            </div>`;
+        }).join('') : `<div class="empty-state"><div class="icon">🎉</div><p>Nothing urgent right now.</p></div>`;
+    }
+
+    // ---- TABS ----
+    window.setTab = function(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + tab)?.classList.add('active');
+        applyFilters();
+    };
+
+    window.setStatusFilter = function(status) {
+        applyFilters(status);
+    };
+
+    // ---- FILTER + SORT + RENDER ----
+    window.applyFilters = function(forceStatus) {
+        const search = (document.getElementById('searchBox')?.value || '').toLowerCase();
+        const sort   = document.getElementById('sortSelect')?.value || 'newest';
+
+        let rows = allRows.filter(r => {
+            const s = r.data.status;
+            if (currentTab === 'active')   return s === 'Pending' || s === 'In Progress';
+            if (currentTab === 'resolved') return s === 'Resolved';
+            if (currentTab === 'rejected') return s === 'Rejected';
+            return true; // 'all'
+        });
+
+        if (forceStatus) rows = rows.filter(r => r.data.status === forceStatus);
+
+        if (search) {
+            rows = rows.filter(r => {
+                const d = r.data;
+                return (r.id + ' ' + (d.studentId||'') + ' ' + (d.location||'') + ' ' + (d.category||''))
+                    .toLowerCase().includes(search);
+            });
+        }
+
+        const urgencyOrder = { 'Pending': 0, 'In Progress': 1, 'Resolved': 2, 'Rejected': 3 };
+        rows.sort((a, b) => {
+            if (sort === 'urgency') return (urgencyOrder[a.data.status]||9) - (urgencyOrder[b.data.status]||9);
+            const tA = a.data.createdAt?.toMillis?.() || 0;
+            const tB = b.data.createdAt?.toMillis?.() || 0;
+            return sort === 'oldest' ? tA - tB : tB - tA;
+        });
+
+        renderRows(rows, 'reports', currentTab);
+    };
+
+    // ---- SHARED CARD RENDERER ----
+    function renderRows(rows, targetId, mode) {
+        const el = document.getElementById(targetId);
+        if (!rows.length) {
+            const msgs = {
+                active:   'No active reports right now. 🎉',
+                resolved: 'No resolved reports yet.',
+                rejected: 'No rejected reports.',
+                all:      'No reports found.'
+            };
+            el.innerHTML = `<div class="empty-state"><div class="icon">${mode==='active'?'🎉':'📭'}</div><p>${msgs[mode]||'No reports found.'}</p></div>`;
+            return;
+        }
+
+        el.innerHTML = rows.map(r => {
+            const d = r.data;
+            const shortId = r.id.slice(0, 12).toUpperCase();
+            const cardClass = (d.status || '').toLowerCase().replace(' ', '-');
+            const days = daysSince(d.createdAt);
+            const isUrgent = d.status === 'Pending' && days !== null && days >= 3;
+            const dateStr = d.createdAt?.toDate ? d.createdAt.toDate().toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }) : 'Unknown date';
+
+            const photos = d.photos?.length
+                ? `<div class="photo-gallery">${d.photos.map(p =>
+                    `<img src="${p.url||p.data||p}" class="photo-thumb" onclick="openImageModal('${p.url||p.data||p}')" alt="Report photo">`
+                  ).join('')}</div>`
+                : '';
+
+            const controls = `
+                <div class="controls-col">
+                    <select class="status" onchange="updateStatus('${r.id}', this.value)">
+                        <option ${d.status==='Pending'?'selected':''}>Pending</option>
+                        <option ${d.status==='In Progress'?'selected':''}>In Progress</option>
+                        <option ${d.status==='Resolved'?'selected':''}>Resolved</option>
+                        <option ${d.status==='Rejected'?'selected':''}>Rejected</option>
+                    </select>
+                    <textarea class="resolution-area" id="resolution-${r.id}"
+                        placeholder="Add resolution notes…">${escapeHtml(d.resolution||'')}</textarea>
+                    <button class="btn-save" id="savebtn-${r.id}" onclick="saveResolution('${r.id}', this)">💾 Save notes</button>
+                    <button class="btn-delete" onclick="deleteReport('${r.id}')">🗑 Delete report</button>
+                </div>
+            `;
+
+            return `
+            <div class="report-card ${cardClass}">
+                <div class="report-card-top">
+                    <div>
+                        <div class="report-card-title">
+                            ${escapeHtml(d.category || 'No category')}
+                            ${isUrgent ? '<span class="urgent-tag">⚠️ Urgent</span>' : ''}
+                        </div>
+                        <div class="report-card-meta">
+                            <span class="meta-item">🪪 ${escapeHtml(d.studentId||'N/A')}</span>
+                            <span class="meta-item">📍 ${escapeHtml(d.location||'N/A')}</span>
+                            <span class="meta-item">📅 ${dateStr}${days!==null?' ('+days+' day'+(days!==1?'s':'')+' ago)':''}</span>
+                            <span class="meta-item">🆔 ${shortId}</span>
+                        </div>
+                    </div>
+                    <span class="badge badge-${cardClass==='in-progress'?'progress':cardClass}">${escapeHtml(d.status||'Pending')}</span>
+                </div>
+
+                <div class="report-card-body">${escapeHtml(d.description||'No description')}</div>
+
+                <div class="report-card-footer">
+                    ${photos}
+                    ${controls}
+                </div>
+
+                ${d.history?.length ? `
+                <details style="margin-top:10px;font-size:12px;color:#64748b;">
+                    <summary style="cursor:pointer;font-weight:600;">Status history (${d.history.length})</summary>
+                    <div style="margin-top:6px;padding-left:12px;border-left:2px solid #e2e8f0;">
+                        ${d.history.map(h=>`<div style="margin-bottom:4px;"><strong>${h.status}</strong> — ${h.time}</div>`).join('')}
+                    </div>
+                </details>` : ''}
+            </div>`;
+        }).join('');
+    }
+
+    // ---- ACTIONS ----
+    window.updateStatus = async (id, status) => {
+        try {
+            const resolution = document.getElementById(`resolution-${id}`)?.value.trim() || '';
+            await window._updateDoc(window._doc(window._db, 'reports', id), {
+                status,
+                resolution,
+                history: window._arrayUnion({ status, time: new Date().toLocaleString('en-PH') })
+            });
+            await fetchAndRender();
+        } catch(e) { alert('Failed to update status.'); console.error(e); }
+    };
+
+    window.saveResolution = async (id, btn) => {
+        try {
+            const notes = document.getElementById(`resolution-${id}`)?.value.trim();
+            await window._updateDoc(window._doc(window._db, 'reports', id), { resolution: notes });
+            btn.textContent = '✓ Saved!';
+            btn.style.background = '#166534';
+            setTimeout(() => { btn.textContent = '💾 Save notes'; btn.style.background = ''; }, 2000);
+        } catch(e) { console.error(e); alert('Failed to save notes: ' + e.message); }
+    };
+
+    window.deleteReport = async (id) => {
+        if (!confirm('Delete this report permanently? This cannot be undone.')) return;
+        try {
+            await window._deleteDoc(window._doc(window._db, 'reports', id));
+            await fetchAndRender();
+        } catch(e) { alert('Failed to delete report.'); console.error(e); }
+    };
+
+    window.signOut = function() {
+        localStorage.removeItem('adminLoggedIn');
+        sessionStorage.clear();
+        location.replace('admin-login.html');
+    };
+
+    // ---- ANALYTICS ----
+    function renderAnalytics() {
+        const rows = allRows;
+        document.getElementById('kpiTotal').textContent = rows.length;
+        const resolved = rows.filter(r => r.data.status === 'Resolved').length;
+        document.getElementById('kpiResolvedPct').textContent = rows.length ? Math.round(resolved / rows.length * 100) + '%' : '0%';
+        document.getElementById('kpiUrgent').textContent = rows.filter(r => r.data.status === 'Pending' && (daysSince(r.data.createdAt)||0) >= 3).length;
+
+        // avg days to resolve — createdAt -> first "Resolved" entry in history
+        const resolveTimes = [];
+        rows.forEach(r => {
+            if (r.data.status !== 'Resolved' || !r.data.history?.length || !r.data.createdAt?.toMillis) return;
+            const entry = r.data.history.find(h => h.status === 'Resolved');
+            if (!entry) return;
+            const resolvedTime = new Date(entry.time).getTime();
+            if (isNaN(resolvedTime)) return;
+            const days = (resolvedTime - r.data.createdAt.toMillis()) / 86400000;
+            if (days >= 0) resolveTimes.push(days);
+        });
+        document.getElementById('kpiAvgDays').textContent = resolveTimes.length
+            ? (resolveTimes.reduce((a,b)=>a+b,0) / resolveTimes.length).toFixed(1)
+            : '–';
+
+        const statusCounts = { Pending:0, 'In Progress':0, Resolved:0, Rejected:0 };
+        const categoryCounts = {};
+        const locationCounts = {};
+        rows.forEach(r => {
+            const d = r.data;
+            if (statusCounts[d.status] !== undefined) statusCounts[d.status]++;
+            const cat = d.category || 'Other';
+            categoryCounts[cat] = (categoryCounts[cat]||0) + 1;
+            const loc = d.location || 'Other';
+            locationCounts[loc] = (locationCounts[loc]||0) + 1;
+        });
+
+        // trend: last 14 days
+        const days14 = [];
+        const counts14 = [];
+        for (let i = 13; i >= 0; i--) {
+            const day = new Date(); day.setHours(0,0,0,0); day.setDate(day.getDate() - i);
+            const label = day.toLocaleDateString('en-PH', { month:'short', day:'numeric' });
+            days14.push(label);
+            const count = rows.filter(r => {
+                const t = r.data.createdAt?.toDate?.();
+                if (!t) return false;
+                const d2 = new Date(t); d2.setHours(0,0,0,0);
+                return d2.getTime() === day.getTime();
+            }).length;
+            counts14.push(count);
+        }
+
+        drawChart('chartStatus', 'doughnut', Object.keys(statusCounts), Object.values(statusCounts),
+            ['#f0c808','#3b82f6','#22c55e','#ef4444']);
+        drawChart('chartCategory', 'bar', Object.keys(categoryCounts), Object.values(categoryCounts), '#07294d');
+        drawChart('chartLocation', 'bar', Object.keys(locationCounts), Object.values(locationCounts), '#1447a0');
+        drawChart('chartTrend', 'line', days14, counts14, '#07294d');
+    }
+
+    function drawChart(canvasId, type, labels, data, color) {
+        const ctx = document.getElementById(canvasId);
+        if (!ctx || typeof Chart === 'undefined') return;
+        if (charts[canvasId]) charts[canvasId].destroy();
+        const isColorArray = Array.isArray(color);
+        charts[canvasId] = new Chart(ctx, {
+            type,
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Reports',
+                    data,
+                    backgroundColor: isColorArray ? color : (type === 'line' ? 'rgba(7,41,77,0.12)' : color),
+                    borderColor: isColorArray ? color : color,
+                    borderWidth: type === 'line' ? 2 : 0,
+                    fill: type === 'line',
+                    tension: 0.35,
+                    borderRadius: type === 'bar' ? 6 : 0,
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: type === 'doughnut' } },
+                scales: type === 'doughnut' ? {} : { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+    }
+
+    // ---- IMAGE MODAL ----
+    const viewerState = {
+        scale:1, minScale:1, maxScale:5, x:0, y:0,
+        targetX:0, targetY:0, targetScale:1,
+        dragging:false, lastTap:0, startDistance:0, startScale:1,
+        raf:null, pointers: new Map()
+    };
+
+    function resetViewer() {
+        const img = document.getElementById('modalImg');
+        viewerState.scale = viewerState.targetScale = 1;
+        viewerState.x = viewerState.y = viewerState.targetX = viewerState.targetY = 0;
+        img.style.transform = 'translate(0px,0px) scale(1)';
+        img.classList.remove('dragging');
+    }
+
+    function clampPan() {
+        const img = document.getElementById('modalImg');
+        const rect = img.getBoundingClientRect();
+        const vw = window.innerWidth, vh = window.innerHeight;
+        const sw = (rect.width / viewerState.scale) * viewerState.targetScale;
+        const sh = (rect.height / viewerState.scale) * viewerState.targetScale;
+        const maxX = Math.max(0, (sw - vw) / 2);
+        const maxY = Math.max(0, (sh - vh) / 2);
+        viewerState.targetX = Math.min(maxX, Math.max(-maxX, viewerState.targetX));
+        viewerState.targetY = Math.min(maxY, Math.max(-maxY, viewerState.targetY));
+    }
+
+    function animateViewer() {
+        const img = document.getElementById('modalImg');
+        viewerState.scale += (viewerState.targetScale - viewerState.scale) * 0.18;
+        viewerState.x += (viewerState.targetX - viewerState.x) * 0.18;
+        viewerState.y += (viewerState.targetY - viewerState.y) * 0.18;
+        img.style.transform = `translate(${viewerState.x}px,${viewerState.y}px) scale(${viewerState.scale})`;
+        if (Math.abs(viewerState.scale - viewerState.targetScale) > 0.001 ||
+            Math.abs(viewerState.x - viewerState.targetX) > 0.1 ||
+            Math.abs(viewerState.y - viewerState.targetY) > 0.1) {
+            viewerState.raf = requestAnimationFrame(animateViewer);
+        } else { viewerState.raf = null; }
+    }
+
+    function requestAnim() { if (!viewerState.raf) viewerState.raf = requestAnimationFrame(animateViewer); }
+
+    function zoomAt(cx, cy, newScale) {
+        const prev = viewerState.targetScale;
+        newScale = Math.max(viewerState.minScale, Math.min(viewerState.maxScale, newScale));
+        const ox = cx - window.innerWidth / 2, oy = cy - window.innerHeight / 2;
+        viewerState.targetX = ox - (ox - viewerState.targetX) * (newScale / prev);
+        viewerState.targetY = oy - (oy - viewerState.targetY) * (newScale / prev);
+        viewerState.targetScale = newScale;
+        clampPan(); requestAnim();
+    }
+
+    window.openImageModal = function(src) {
+        const scrollY = window.scrollY;
+        document.body.dataset.scrollY = scrollY;
+        Object.assign(document.body.style, { position:'fixed', top:`-${scrollY}px`, left:'0', right:'0', width:'100%', overflow:'hidden' });
+        document.getElementById('modalImg').src = src;
+        document.getElementById('imageModal').classList.add('active');
+        resetViewer();
+        const hint = document.getElementById('zoomHint');
+        hint.style.opacity = '1';
+        clearTimeout(window.__hintTimer);
+        window.__hintTimer = setTimeout(() => hint.style.opacity = '0', 2500);
+    };
+
+    window.closeImageModal = function() {
+        document.getElementById('imageModal').classList.remove('active');
+        resetViewer();
+        const scrollY = parseInt(document.body.dataset.scrollY || '0', 10);
+        Object.assign(document.body.style, { position:'', top:'', left:'', right:'', width:'', overflow:'' });
+        window.scrollTo(0, scrollY);
+    };
+
+    document.addEventListener('click', e => {
+        const modal = document.getElementById('imageModal');
+        if (e.target === modal || e.target.classList.contains('image-stage')) closeImageModal();
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeImageModal(); });
+
+    const imgEl = document.getElementById('modalImg');
+    imgEl.addEventListener('wheel', e => { e.preventDefault(); zoomAt(e.clientX, e.clientY, viewerState.targetScale + (e.deltaY < 0 ? 0.25 : -0.25)); }, { passive: false });
+    imgEl.addEventListener('dblclick', e => {
+        if (viewerState.targetScale > 1) { viewerState.targetX = viewerState.targetY = viewerState.targetScale = 1; clampPan(); requestAnim(); }
+        else zoomAt(e.clientX, e.clientY, 3.5);
+    });
+
+    let startX = 0, startY = 0;
+    imgEl.addEventListener('pointerdown', e => {
+        viewerState.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (viewerState.targetScale > 1) { viewerState.dragging = true; imgEl.classList.add('dragging'); startX = e.clientX - viewerState.targetX; startY = e.clientY - viewerState.targetY; }
+    });
+    imgEl.addEventListener('pointermove', e => {
+        if (viewerState.pointers.has(e.pointerId)) viewerState.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (viewerState.pointers.size === 2) {
+            const pts = [...viewerState.pointers.values()];
+            const dist = Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y);
+            const cx = (pts[0].x+pts[1].x)/2, cy = (pts[0].y+pts[1].y)/2;
+            if (!viewerState.startDistance) { viewerState.startDistance = dist; viewerState.startScale = viewerState.targetScale; }
+            zoomAt(cx, cy, viewerState.startScale * (dist / viewerState.startDistance));
+        } else if (viewerState.dragging && viewerState.targetScale > 1) {
+            viewerState.targetX = e.clientX - startX; viewerState.targetY = e.clientY - startY;
+            clampPan(); requestAnim();
+        }
+    });
+    function endPointer(e) { viewerState.pointers.delete(e.pointerId); viewerState.dragging = false; imgEl.classList.remove('dragging'); if (viewerState.pointers.size < 2) viewerState.startDistance = 0; }
+    imgEl.addEventListener('pointerup', endPointer);
+    imgEl.addEventListener('pointercancel', endPointer);
+    imgEl.addEventListener('touchend', e => {
+        const now = Date.now();
+        if (now - viewerState.lastTap < 300) {
+            if (viewerState.targetScale > 1) { viewerState.targetX = viewerState.targetY = 0; viewerState.targetScale = 1; clampPan(); requestAnim(); }
+            else zoomAt(window.innerWidth/2, window.innerHeight/2, 2.5);
+        }
+        viewerState.lastTap = now;
+    });
+
+    // ---- SETTINGS ----
+    window.toggleDarkMode = function(on) {
+        document.body.classList.toggle('dark-mode', on);
+        localStorage.setItem('adminDarkMode', on ? '1' : '0');
+    };
+
+    if (localStorage.getItem('adminDarkMode') === '1') {
+        document.body.classList.add('dark-mode');
+        document.addEventListener('DOMContentLoaded', () => {
+            const t = document.getElementById('darkModeToggle');
+            if (t) t.checked = true;
+        });
+    }
+
+    window.toggleRefresh = function(on) {
+        if (refreshTimer) clearInterval(refreshTimer);
+        if (on) refreshTimer = setInterval(fetchAndRender, 15000);
+    };
+
+    // ---- INIT ----
+    fetchAndRender();
+    refreshTimer = setInterval(fetchAndRender, 15000);
+
+</script>
+<script src="ui.js"></script>
+</body>
+</html>
