@@ -6,44 +6,133 @@
   <title>SHS-AdC Facility Report System</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-    .features {
+    /* ── STATS STRIP ── */
+    .stats-strip {
+      background: rgba(5,20,40,0.55);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 20px 24px;
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+    .stat-item { text-align: center; }
+    .stat-item .num  { font-size: 28px; font-weight: 800; color: var(--gold); letter-spacing: -0.03em; }
+    .stat-item .lbl  { font-size: 12px; color: rgba(255,255,255,0.60); margin-top: 2px; font-weight: 500; }
+
+    /* ── HOW IT WORKS ── */
+    .section-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 72px 24px;
+    }
+    .section-tag {
+      display: inline-block;
+      background: rgba(240,200,8,0.12);
+      color: var(--gold-dark);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(240,200,8,0.2);
+    }
+    .section-title {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.03em;
+      margin-bottom: 10px;
+    }
+    .section-sub { font-size: 15px; color: var(--muted); max-width: 520px; line-height: 1.7; }
+
+    .steps-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      max-width: 860px;
-      margin: -80px auto 0;
-      padding: 100px 20px 80px;
-      position: relative;
-      z-index: 2;
+      gap: 20px;
+      margin-top: 40px;
     }
-    .feature-card {
-      background: rgba(7,41,77,0.15);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
+
+    .step-card {
+      background: #fff;
+      border: 1px solid rgba(7,41,77,0.07);
+      border-radius: 16px;
       padding: 24px 20px;
-      backdrop-filter: blur(6px);
-      color: rgba(255,255,255,0.90);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
     }
-    .feature-icon {
-      font-size: 28px; margin-bottom: 10px;
+    .step-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--navy), var(--gold));
     }
-    .feature-card h3 {
-      font-size: 15px; font-weight: 600;
-      margin-bottom: 6px;
+    .step-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    .step-num {
+      width: 32px; height: 32px;
+      background: var(--navy);
       color: #fff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 14px;
     }
-    .feature-card p {
-      font-size: 13px; color: rgba(255,255,255,0.80); line-height: 1.6;
-    }
-    .footer {
+    .step-icon { font-size: 24px; margin-bottom: 10px; }
+    .step-card h3 { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+    .step-card p  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+    /* ── CTA ── */
+    .cta-section {
+      background: var(--navy);
+      padding: 64px 24px;
       text-align: center;
-      padding: 40px 20px;
-      font-size: 12px;
-      color: rgba(255,255,255,0.70);
-      background: rgba(7,41,77,0.25);
-      backdrop-filter: blur(8px);
+      position: relative;
+      overflow: hidden;
     }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(240,200,8,0.10) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-section h2 {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 12px;
+      letter-spacing: -0.03em;
+    }
+    .cta-section p { color: rgba(255,255,255,0.70); font-size: 15px; margin-bottom: 28px; }
+    .cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    /* ── FOOTER ── */
+    .site-footer {
+      background: #020c1b;
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .footer-logo img { width: 32px; height: 32px; border-radius: 8px; object-fit: cover; }
+    .footer-logo span { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.8); }
+    .footer-copy { font-size: 12px; color: rgba(255,255,255,0.35); }
   </style>
 </head>
 <body>
@@ -54,9 +143,9 @@
       <source srcset="assets/crest.png" type="image/png">
       <img class="crest" src="assets/crest.svg" alt="SHS crest" />
     </picture>
-    <div style="line-height:1; margin-left:8px">
-      <div style="font-weight:700">Sacred Heart School</div>
-      <div style="font-size:12px; color:var(--muted);">Ateneo de Cebu</div>
+    <div>
+      <div class="school-name">Sacred Heart School</div>
+      <div class="school-sub">Ateneo de Cebu</div>
     </div>
   </a>
   <div class="nav-links">
@@ -67,6 +156,7 @@
   </div>
 </nav>
 
+<!-- HERO -->
 <section class="hero-block">
   <div class="hero">
     <div class="hero-logo">
@@ -76,35 +166,90 @@
       </picture>
     </div>
     <h1>Facility Maintenance<br>Reporting System</h1>
-    <p>Sacred Heart School – Ateneo de Cebu. Report broken equipment, damaged furniture, and facility issues directly to the maintenance team.</p>
+    <p>Report broken equipment, damaged furniture, and facility issues directly to our maintenance team — fast, easy, and trackable.</p>
     <div class="hero-btns">
-      <a href="report.html" class="btn btn-primary">Submit a report</a>
-      <a href="track.html" class="btn btn-outline">Track my report</a>
+      <a href="report.html" class="btn btn-outline">📋 Submit a report</a>
+      <a href="track.html" class="btn btn-ghost">🔍 Track my report</a>
     </div>
   </div>
 
+  <!-- STATS STRIP -->
+  <div class="stats-strip">
+    <div class="stat-item"><div class="num">100%</div><div class="lbl">Digital reporting</div></div>
+    <div class="stat-item"><div class="num">Real-time</div><div class="lbl">Status tracking</div></div>
+    <div class="stat-item"><div class="num">30-day</div><div class="lbl">Auto-archive</div></div>
+    <div class="stat-item"><div class="num">7</div><div class="lbl">Issue categories</div></div>
+  </div>
+
+  <!-- FEATURE CARDS -->
   <div class="features">
-  <div class="feature-card">
-    <div class="feature-icon">📋</div>
-    <h3>Easy reporting</h3>
-    <p>Fill out a simple form to report any facility issue in your school.</p>
+    <div class="feature-card">
+      <div class="feature-icon">📋</div>
+      <h3>Easy reporting</h3>
+      <p>Fill out a simple form with photos to report any facility issue in minutes.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📍</div>
+      <h3>Track your report</h3>
+      <p>Use your unique Report ID to check real-time status updates anytime.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Fast response</h3>
+      <p>Admin is notified immediately and can update status in real time.</p>
+    </div>
   </div>
-  <div class="feature-card">
-    <div class="feature-icon">📍</div>
-    <h3>Track status</h3>
-    <p>Use your report ID to check if your concern has been resolved.</p>
-  </div>
-  <div class="feature-card">
-    <div class="feature-icon">⚡</div>
-    <h3>Fast response</h3>
-    <p>Admin is notified immediately and can update the status in real time.</p>
-  </div>
-</div>
 </section>
 
-<div class="footer">
-  &copy; 2026 Sacred Heart School – Ateneo de Cebu · Senior High School Department
+<!-- HOW IT WORKS -->
+<div class="section-wrap">
+  <div class="section-tag">How it works</div>
+  <h2 class="section-title">Three simple steps</h2>
+  <p class="section-sub">From spotting an issue to getting it resolved — the whole process is transparent and trackable.</p>
+
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-icon">✍️</div>
+      <h3>Submit your report</h3>
+      <p>Fill in your Student ID, describe the issue, select the location and category, and attach a photo if you have one.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-icon">🔔</div>
+      <h3>Admin reviews it</h3>
+      <p>The maintenance admin receives your report instantly and assigns a status — Pending, In Progress, or Resolved.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-icon">✅</div>
+      <h3>Track & get resolved</h3>
+      <p>Use your Report ID on the Track page to check progress and see resolution notes from the maintenance team.</p>
+    </div>
+  </div>
 </div>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>See something broken?</h2>
+  <p>Don't wait — report it now and help keep our school in great shape.</p>
+  <div class="cta-btns">
+    <a href="report.html" class="btn btn-outline">Submit a report</a>
+    <a href="track.html" class="btn btn-ghost">Track existing report</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-logo">
+    <picture>
+      <source srcset="assets/crest.png" type="image/png">
+      <img src="assets/crest.svg" alt="SHS crest" />
+    </picture>
+    <span>Sacred Heart School – Ateneo de Cebu</span>
+  </div>
+  <p class="footer-copy">&copy; 2026 SHS-AdC · Senior High School Department · Facility Maintenance Reporting System</p>
+</footer>
 
 <script src="ui.js"></script>
 </body>
