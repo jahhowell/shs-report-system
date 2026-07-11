@@ -554,9 +554,13 @@
         recentEl.innerHTML = recent.length ? recent.map(r => {
             const d = r.data;
             const dateStr = d.createdAt?.toDate ? d.createdAt.toDate().toLocaleDateString('en-PH', { month:'short', day:'numeric' }) : '—';
-            return `<div class="mini-row">
-                <div><div class="mr-title">${escapeHtml(d.category||'No category')}</div><div class="mr-meta">${escapeHtml(d.location||'N/A')} · ${dateStr}</div></div>
-                <span class="badge badge-${(d.status||'pending').toLowerCase().replace(' ','')==='inprogress'?'progress':(d.status||'').toLowerCase()}">${escapeHtml(d.status||'Pending')}</span>
+            const badgeKey = (d.status||'pending').toLowerCase().replace(' ','') === 'inprogress' ? 'progress' : (d.status||'pending').toLowerCase();
+            return `<div class="mini-row" onclick="jumpToReport('${r.id}')" style="cursor:pointer;" title="Click to view report">
+                <div style="flex:1"><div class="mr-title">${escapeHtml(d.category||'No category')}</div><div class="mr-meta">${escapeHtml(d.location||'N/A')} · ${dateStr}</div></div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="badge badge-${badgeKey}">${escapeHtml(d.status||'Pending')}</span>
+                    <span style="font-size:12px;color:#64748b;font-weight:600;">View →</span>
+                </div>
             </div>`;
         }).join('') : `<div class="empty-state"><div class="icon">📭</div><p>No reports yet.</p></div>`;
 
