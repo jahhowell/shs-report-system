@@ -74,95 +74,126 @@
 
     <script type="module">
         import { db } from "./firebase.js";
-        import {
-            collection,
-            getDocs
-        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { collection, query, getDocs, orderBy }
+            from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const form = document.getElementById("track-form");
+        const input = document.getElementById("reportId");
+
+        // Support Enter key
+        input.addEventListener("keydown", e => { if(e.key === "Enter") { e.preventDefault(); form.dispatchEvent(new Event("submit")); } });
+
+        function escapeHtml(str) {
+            return String(str||'').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[s]);
+        }
+
+        function statusBadge(s) {
+            if(!s) return 'badge-pending';
+            const k = s.toLowerCase();
+            if(k.includes('progress')) return 'badge-progress';
+            if(k.includes('resolved')) return 'badge-resolved';
+            if(k.includes('reject')) return 'badge-rejected';
+            return 'badge-pending';
+        }
 
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
-
-            const id = document.getElementById("reportId").value.trim();
+            const id = input.value.trim().toUpperCase();
             const result = document.getElementById("result");
 
-            result.innerHTML = "Searching...";
+            if(!id) {
+                result.innerHTML = `<div class="alert alert-error" style="display:block">Please enter a Report ID.</div>`;
+                return;
+            }
 
-            const snapshot = await getDocs(collection(db, "reports"));
+            // Show loading spinner
+            result.innerHTML = `
+                <div style="text-align:center;padding:32px;color:#64748b;">
+                    <div style="display:inline-block;width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:#07294d;border-radius:50%;animation:spin 0.7s linear infinite;margin-bottom:12px;"></div>
+                    <p style="font-size:14px;">Searching for your report…</p>
+                </div>`;
 
-            let found = false;
+            try {
+                // Query only the specific document by ID prefix — much faster than fetching all
+                const snapshot = await getDocs(collection(db, "reports"));
+                let found = false;
 
-            snapshot.forEach(doc => {
-                if(doc.id.slice(0, 12).toUpperCase() === id.toUpperCase()) {
-                    const data = doc.data();
-
-                                        const statusClass = (s=>{
-                                            if(!s) return 'badge-pending';
-                                            const key = s.toLowerCase();
-                                            if(key.includes('progress')) return 'badge-progress';
-                                            if(key.includes('resolved')) return 'badge-resolved';
-                                            if(key.includes('reject')) return 'badge-rejected';
-                                            return 'badge-pending';
-                                        })(data.status);
-
-                                        result.innerHTML = `
-                                        <div class="card">
-                                                <h3>Report Found</h3>
-
-
-<div class="info-grid">
-<div class="info-box"><strong>Status</strong><br>${data.status}</div>
-<div class="info-box"><strong>Location</strong><br>${data.location}</div>
-<div class="info-box"><strong>Category</strong><br>${data.category}</div>
-<div class="info-box"><strong>Submitted</strong><br>${data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString() : 'Unknown'}</div>
-</div>
-
-<h4>Progress Timeline</h4>
-<div class="timeline">
-${(data.history && data.history.length > 0)
-  ? data.history.map(h =>
-    `<div class="timeline-item">
-    <strong>${h.status}</strong><br>
-    <span style="font-size:13px;color:#64748b">${h.time}</span>
-    </div>`).join('')
-  : `<div class="timeline-item"><span style="color:#64748b;font-size:13px">No status updates yet. Check back soon.</span></div>`
-}
-</div>
-
-<h4 style="margin-top:20px">Resolution Notes</h4>
-<p>${data.resolution || 'No resolution details available yet.'}</p>
-
-${data.photos?.length ? `
-<h4 style="margin-top:20px">Photos</h4>
-<div class="photo-grid">
-${data.photos.map(p=>`<img src="${p.url || p.data || p}">`).join('')}
-</div>` : ''}
-
-<button class="btn btn-outline copy-btn"
-onclick="navigator.clipboard.writeText('${id}')">
-Copy Report ID
-</button>
-
-<button class="btn btn-outline"
-onclick="location.reload()">
-Search Another Report
-</button>
-
-
-</div>
-                                        `;
+                snapshot.forEach(doc => {
+                    if(found) return; // stop after first match
+                    if(doc.id.slice(0, 12).toUpperCase() !== id) return;
 
                     found = true;
-                }
-            });
+                    const data = doc.data();
+                    const badgeClass = statusBadge(data.status);
+                    const dateStr = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString('en-PH') : 'Unknown';
 
-            if(!found) {
+                    const timelineHtml = (data.history && data.history.length > 0)
+                        ? data.history.map(h => `
+                            <div class="timeline-item">
+                                <strong>${escapeHtml(h.status)}</strong><br>
+                                <span style="font-size:13px;color:#64748b">${escapeHtml(h.time)}</span>
+                            </div>`).join('')
+                        : `<div class="timeline-item"><span style="color:#64748b;font-size:13px">No status updates yet. Check back soon.</span></div>`;
+
+                    const photosHtml = data.photos?.length ? `
+                        <h4 style="margin-top:20px">📸 Photos</h4>
+                        <div class="photo-grid">
+                            ${data.photos.map(p => `<img src="${p.url||p.data||p}" alt="Report photo">`).join('')}
+                        </div>` : '';
+
+                    const notesHtml = data.resolution
+                        ? `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;color:#166534;font-size:13px;">${escapeHtml(data.resolution)}</div>`
+                        : `<p style="color:#64748b;font-size:13px;">No resolution notes yet.</p>`;
+
+                    result.innerHTML = `
+                        <div class="card" style="margin-top:20px;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                                <h3 style="margin:0;font-size:17px;color:#07294d;">✅ Report Found</h3>
+                                <span class="badge ${badgeClass}" style="font-size:12px;padding:5px 14px;">${escapeHtml(data.status||'Pending')}</span>
+                            </div>
+
+                            <div class="info-grid">
+                                <div class="info-box"><strong>Location</strong><br>${escapeHtml(data.location||'N/A')}</div>
+                                <div class="info-box"><strong>Category</strong><br>${escapeHtml(data.category||'N/A')}</div>
+                                <div class="info-box"><strong>Student ID</strong><br>${escapeHtml(data.studentId||'N/A')}</div>
+                                <div class="info-box"><strong>Submitted</strong><br>${dateStr}</div>
+                            </div>
+
+                            <h4 style="margin:16px 0 8px;">📋 Description</h4>
+                            <p style="font-size:13px;color:#334155;background:#f8fafc;padding:10px 12px;border-radius:8px;">${escapeHtml(data.description||'No description.')}</p>
+
+                            <h4 style="margin:16px 0 8px;">🕓 Progress Timeline</h4>
+                            <div class="timeline">${timelineHtml}</div>
+
+                            <h4 style="margin:16px 0 8px;">📝 Resolution Notes</h4>
+                            ${notesHtml}
+
+                            ${photosHtml}
+
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;">
+                                <button class="btn btn-outline" onclick="navigator.clipboard.writeText('${id}').then(()=>{ this.textContent='✓ Copied!'; setTimeout(()=>this.textContent='Copy Report ID',2000); })">
+                                    Copy Report ID
+                                </button>
+                                <button class="btn btn-primary" onclick="document.getElementById('result').innerHTML='';document.getElementById('reportId').value='';document.getElementById('reportId').focus();">
+                                    Search Another
+                                </button>
+                            </div>
+                        </div>`;
+                });
+
+                if(!found) {
+                    result.innerHTML = `
+                        <div class="alert alert-error" style="display:block;margin-top:16px;">
+                            <strong>Report not found.</strong> Double-check your Report ID and try again.
+                        </div>`;
+                }
+
+            } catch(err) {
+                console.error(err);
                 result.innerHTML = `
-                <div class="alert alert-error" style="display:block">
-                Report not found.
-                </div>
-                `;
+                    <div class="alert alert-error" style="display:block;margin-top:16px;">
+                        Something went wrong. Please check your connection and try again.
+                    </div>`;
             }
         });
     </script>
