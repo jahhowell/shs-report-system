@@ -150,6 +150,8 @@
 
         /* ===== URGENCY BADGE ===== */
         .urgent-tag { background: #fef2f2; color: #dc2626; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; border: 1px solid #fca5a5; }
+        .mini-row { transition: background 0.15s, transform 0.15s; border-radius: 8px; padding: 8px !important; margin: 0 -8px; }
+        .mini-row:hover { background: rgba(240,200,8,0.08); transform: translateX(3px); }
 
         /* ===== IMAGE MODAL ===== */
         .image-modal { position: fixed; inset: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,.96); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 9999; overflow: hidden; touch-action: none; }
@@ -563,12 +565,36 @@
         urgentEl.innerHTML = urgent.length ? urgent.slice(0,5).map(r => {
             const d = r.data;
             const days = daysSince(d.createdAt);
-            return `<div class="mini-row">
-                <div><div class="mr-title">${escapeHtml(d.category||'No category')}</div><div class="mr-meta">${escapeHtml(d.location||'N/A')} · pending ${days} day${days!==1?'s':''}</div></div>
-                <span class="urgent-tag">⚠️ Urgent</span>
+            return `<div class="mini-row" onclick="jumpToReport('${r.id}')" style="cursor:pointer;" title="Click to view report">
+                <div style="flex:1"><div class="mr-title">${escapeHtml(d.category||'No category')}</div><div class="mr-meta">${escapeHtml(d.location||'N/A')} · pending ${days} day${days!==1?'s':''}</div></div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="urgent-tag">⚠️ Urgent</span>
+                    <span style="font-size:12px;color:#64748b;font-weight:600;">View →</span>
+                </div>
             </div>`;
         }).join('') : `<div class="empty-state"><div class="icon">🎉</div><p>Nothing urgent right now.</p></div>`;
     }
+
+    // ---- JUMP TO REPORT ----
+    window.jumpToReport = function(id) {
+        // Switch to Reports page, Active tab
+        goToPage('reports');
+        setTab('active');
+        // Wait for render then scroll to and highlight the card
+        setTimeout(() => {
+            const card = document.getElementById('rc-' + id);
+            if (card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                card.style.transition = 'box-shadow 0.3s, outline 0.3s';
+                card.style.outline = '3px solid #f0c808';
+                card.style.boxShadow = '0 0 0 6px rgba(240,200,8,0.25)';
+                setTimeout(() => {
+                    card.style.outline = '';
+                    card.style.boxShadow = '';
+                }, 2500);
+            }
+        }, 200);
+    };
 
     // ---- TABS ----
     window.setTab = function(tab) {
@@ -660,7 +686,7 @@
             `;
 
             return `
-            <div class="report-card ${cardClass}">
+            <div class="report-card ${cardClass}" id="rc-${r.id}">
                 <div class="report-card-top">
                     <div>
                         <div class="report-card-title">
