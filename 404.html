@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Not Found — SHS-AdC</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="assets/favicon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <style>
+    .nf-block {
+      min-height: calc(100vh - 66px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--navy-dark);
+      background-image:
+        linear-gradient(160deg, rgba(7,41,77,0.88) 0%, rgba(5,30,56,0.97) 100%),
+        url('assets/hero.jpg');
+      background-size: cover;
+      background-position: center;
+      padding: 40px 24px;
+      text-align: center;
+    }
+    .nf-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 48px 40px;
+      max-width: 440px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+    }
+    .nf-code {
+      font-size: 64px;
+      font-weight: 900;
+      color: var(--navy);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .nf-code span { color: var(--gold-dark); }
+    .nf-card h1 { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+    .nf-card p { font-size: 13.5px; color: var(--muted); line-height: 1.6; margin-bottom: 28px; }
+    .nf-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <img class="crest" src="assets/crest.png" alt="SHS crest" />
+    <div>
+      <div class="school-name">Sacred Heart School</div>
+      <div class="school-sub">Ateneo de Cebu</div>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="report.html">Submit report</a>
+    <a href="track.html">Track report</a>
+    <a href="admin-login.html">Admin</a>
+  </div>
+</nav>
+
+<div class="nf-block">
+  <div class="nf-card">
+    <div class="nf-code">4<span>0</span>4</div>
+    <h1>Page not found</h1>
+    <p>The page you're looking for doesn't exist, may have been moved, or the link is broken.</p>
+    <div class="nf-btns">
+      <a href="index.html" class="btn btn-primary">Back to home</a>
+      <a href="report.html" class="btn btn-outline">Submit a report</a>
+    </div>
+  </div>
+</div>
+
+<script src="ui.js"></script>
+</body>
+</html>
