@@ -1,237 +1,229 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Submit Report — SHS-AdC</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="icon" href="assets/favicon.png" type="image/png" />
-  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
-  <style>
-    .report-hero {
-      background: linear-gradient(160deg, #07294d 0%, #051e38 100%);
-      background-image: linear-gradient(160deg, rgba(7,41,77,0.90) 0%, rgba(5,30,56,0.97) 100%), url('assets/hero.jpg');
-      background-size: cover; background-position: center;
-      color: #fff;
-      padding: 72px 24px 56px;
-      text-align: center;
-    }
-    .report-hero h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; letter-spacing:-0.03em; }
-    .report-hero p  { color: rgba(255,255,255,0.75); font-size: 14px; max-width:520px; margin:0 auto; }
-
-    .form-wrap { max-width: 680px; margin: 0 auto; padding: 36px 20px 60px; }
-
-    .section-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: var(--muted);
-      margin: 24px 0 12px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid rgba(7,41,77,0.07);
-    }
-
-    .char-bar { font-size: 11px; color: #94a3b8; text-align: right; margin-top: 5px; font-weight: 500; }
-
-    .photo-zone {
-      border: 2px dashed rgba(7,41,77,0.15);
-      border-radius: 12px;
-      padding: 28px 20px;
-      text-align: center;
-      cursor: pointer;
-      background: #f8fafc;
-      position: relative;
-      transition: all 0.2s;
-    }
-    .photo-zone:hover { background: #eff6ff; border-color: var(--navy); }
-    .photo-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
-    .photo-zone .zone-icon { font-size: 32px; display: block; margin-bottom: 8px; }
-    .photo-zone .zone-title { font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
-    .photo-zone .zone-hint  { font-size: 12px; color: var(--muted); }
-
-    .preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 10px; margin-top: 12px; }
-    .preview-item { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; }
-    .preview-item img { width:100%; height:100%; object-fit:cover; }
-    .preview-item button {
-      position: absolute; top: 5px; right: 5px;
-      background: rgba(0,0,0,0.65); border: none;
-      border-radius: 50%; width: 22px; height: 22px;
-      color: #fff; font-size: 12px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      backdrop-filter: blur(4px);
-    }
-    .preview-item button:hover { background: rgba(200,0,0,0.75); }
-
-    /* SUCCESS */
-    .success-card { text-align: center; padding: 48px 28px; display: none; }
-    .success-icon { font-size: 56px; margin-bottom: 16px; }
-    .success-card h2 { font-size: 22px; font-weight: 800; color: var(--navy); margin-bottom: 8px; letter-spacing:-0.02em; }
-    .success-card .sub { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
-    .report-id-pill {
-      display: inline-block;
-      font-family: 'Courier New', monospace;
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--navy);
-      background: linear-gradient(135deg, #fffbeb, #fef9c3);
-      border: 2px solid var(--gold);
-      padding: 12px 28px;
-      border-radius: 12px;
-      letter-spacing: 0.1em;
-      margin: 4px 0 20px;
-      box-shadow: 0 4px 14px rgba(240,200,8,0.25);
-    }
-    .success-note { font-size: 12px; color: #94a3b8; margin-bottom: 24px; }
-    .success-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-
-    .submit-btn {
-      width: 100%;
-      padding: 14px;
-      font-size: 15px;
-      font-weight: 700;
-      border-radius: 12px;
-      border: none;
-      background: var(--navy);
-      color: #fff;
-      cursor: pointer;
-      transition: all 0.18s;
-      box-shadow: 0 4px 14px rgba(7,41,77,0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      letter-spacing: -0.01em;
-      margin-top: 8px;
-    }
-    .submit-btn:hover:not(:disabled) { background: #0a3b6d; box-shadow: 0 8px 24px rgba(7,41,77,0.35); transform: translateY(-1px); }
-    .submit-btn:active { transform: translateY(0); }
-    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-    /* Draft banner */
-    .draft-banner {
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 13px;
-      color: #92400e;
-      margin-bottom: 16px;
-      display: none;
-      align-items: center;
-      gap: 8px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Submit Report — SHS-AdC</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="icon" href="assets/favicon.png" type="image/png" />
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+<style>
+.report-hero {
+background: linear-gradient(160deg, #07294d 0%, #051e38 100%);
+background-image: linear-gradient(160deg, rgba(7,41,77,0.90) 0%, rgba(5,30,56,0.97) 100%), url('assets/hero.jpg');
+background-size: cover; background-position: center;
+color: #fff;
+padding: 72px 24px 56px;
+text-align: center;
+}
+.report-hero h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; letter-spacing:-0.03em; }
+.report-hero p { color: rgba(255,255,255,0.75); font-size: 14px; max-width:520px; margin:0 auto; }
+.form-wrap { max-width: 680px; margin: 0 auto; padding: 36px 20px 60px; }
+.section-label {
+font-size: 11px;
+font-weight: 700;
+text-transform: uppercase;
+letter-spacing: 0.8px;
+color: var(--muted);
+margin: 24px 0 12px;
+padding-bottom: 8px;
+border-bottom: 1px solid rgba(7,41,77,0.07);
+}
+.char-bar { font-size: 11px; color: #94a3b8; text-align: right; margin-top: 5px; font-weight: 500; }
+.photo-zone {
+border: 2px dashed rgba(7,41,77,0.15);
+border-radius: 12px;
+padding: 28px 20px;
+text-align: center;
+cursor: pointer;
+background: #f8fafc;
+position: relative;
+transition: all 0.2s;
+}
+.photo-zone:hover { background: #eff6ff; border-color: var(--navy); }
+.photo-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.photo-zone .zone-icon { font-size: 32px; display: block; margin-bottom: 8px; }
+.photo-zone .zone-title { font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+.photo-zone .zone-hint { font-size: 12px; color: var(--muted); }
+.preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 10px; margin-top: 12px; }
+.preview-item { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; }
+.preview-item img { width:100%; height:100%; object-fit:cover; }
+.preview-item button {
+position: absolute; top: 5px; right: 5px;
+background: rgba(0,0,0,0.65); border: none;
+border-radius: 50%; width: 22px; height: 22px;
+color: #fff; font-size: 12px; cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+backdrop-filter: blur(4px);
+}
+.preview-item button:hover { background: rgba(200,0,0,0.75); }
+/* SUCCESS */
+.success-card { text-align: center; padding: 48px 28px; display: none; }
+.success-icon { font-size: 56px; margin-bottom: 16px; }
+.success-card h2 { font-size: 22px; font-weight: 800; color: var(--navy); margin-bottom: 8px; letter-spacing:-0.02em; }
+.success-card .sub { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+.report-id-pill {
+display: inline-block;
+font-family: 'Courier New', monospace;
+font-size: 20px;
+font-weight: 800;
+color: var(--navy);
+background: linear-gradient(135deg, #fffbeb, #fef9c3);
+border: 2px solid var(--gold);
+padding: 12px 28px;
+border-radius: 12px;
+letter-spacing: 0.1em;
+margin: 4px 0 20px;
+box-shadow: 0 4px 14px rgba(240,200,8,0.25);
+}
+.success-note { font-size: 12px; color: #94a3b8; margin-bottom: 24px; }
+.success-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.submit-btn {
+width: 100%;
+padding: 14px;
+font-size: 15px;
+font-weight: 700;
+border-radius: 12px;
+border: none;
+background: var(--navy);
+color: #fff;
+cursor: pointer;
+transition: all 0.18s;
+box-shadow: 0 4px 14px rgba(7,41,77,0.25);
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 8px;
+letter-spacing: -0.01em;
+margin-top: 8px;
+}
+.submit-btn:hover:not(:disabled) { background: #0a3b6d; box-shadow: 0 8px 24px rgba(7,41,77,0.35); transform: translateY(-1px); }
+.submit-btn:active { transform: translateY(0); }
+.submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+/* Draft banner */
+.draft-banner {
+background: #fffbeb;
+border: 1px solid #fde68a;
+border-radius: 10px;
+padding: 10px 14px;
+font-size: 13px;
+color: #92400e;
+margin-bottom: 16px;
+display: none;
+align-items: center;
+gap: 8px;
+}
+</style>
 </head>
 <body>
-
 <nav>
-  <a class="nav-logo" href="index.html">
-    <img class="crest" src="assets/crest.png" alt="SHS crest" />
-    <div>
-      <div class="school-name">Sacred Heart School</div>
-      <div class="school-sub">Ateneo de Cebu</div>
-    </div>
-  </a>
-  <div class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="report.html" class="active">Submit report</a>
-    <a href="track.html">Track report</a>
-    <a href="admin-login.html">Admin</a>
-  </div>
+<a class="nav-logo" href="index.html">
+<img class="crest" src="assets/crest.png" alt="SHS crest" />
+<div>
+<div class="school-name">Sacred Heart School</div>
+<div class="school-sub">Ateneo de Cebu</div>
+</div>
+</a>
+<div class="nav-links">
+<a href="index.html">Home</a>
+<a href="report.html" class="active">Submit report</a>
+<a href="track.html">Track report</a>
+<a href="admin-login.html">Admin</a>
+</div>
 </nav>
 
 <div class="report-hero">
-  <h1>Submit a Facility Report</h1>
-  <p>Help us keep Sacred Heart School in perfect condition. Our maintenance team will respond as quickly as possible.</p>
+<h1>Submit a Facility Report</h1>
+<p>Help us keep Sacred Heart School in perfect condition. Our maintenance team will respond as quickly as possible.</p>
 </div>
 
 <div class="form-wrap">
 
-  <!-- SUCCESS -->
-  <div class="card success-card" id="success-card">
-    <div class="success-icon">🎉</div>
-    <h2>Report submitted!</h2>
-    <p class="sub">Your report has been sent to the maintenance team.</p>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:6px;">Your Report ID:</p>
-    <div class="report-id-pill" id="success-report-id"></div>
-    <p class="success-note">📸 Screenshot this ID — you'll need it to track your report status.</p>
-    <div class="success-actions">
-      <a href="track.html" class="btn btn-primary">Track this report</a>
-      <a href="report.html" class="btn btn-outline">Submit another</a>
-    </div>
-  </div>
+<!-- SUCCESS -->
+<div class="card success-card" id="success-card">
+<div class="success-icon">🎉</div>
+<h2>Report submitted!</h2>
+<p class="sub">Your report has been sent to the maintenance team.</p>
+<p style="font-size:13px;color:var(--muted);margin-bottom:6px;">Your Report ID:</p>
+<div class="report-id-pill" id="success-report-id"></div>
+<p class="success-note">📸 Screenshot this ID — you'll need it to track your report status.</p>
+<div class="success-actions">
+<a href="track.html" class="btn btn-primary">Track this report</a>
+<a href="report.html" class="btn btn-outline">Submit another</a>
+</div>
+</div>
 
-  <!-- FORM -->
-  <div id="form-section">
-    <div class="draft-banner" id="draft-banner">📝 Your previous draft has been restored.</div>
-    <div class="alert alert-error" id="error-box"></div>
+<!-- FORM -->
+<div id="form-section">
+<div class="draft-banner" id="draft-banner">📝 Your previous draft has been restored.</div>
+<div class="alert alert-error" id="error-box"></div>
 
-    <div class="card">
-      <form id="report-form" novalidate>
+<div class="card">
+<form id="report-form" novalidate>
 
-        <div class="section-label">Your information</div>
-        <div class="form-group">
-          <label class="form-label" for="studentId">Student ID <span class="req">*</span></label>
-          <input type="text" id="studentId" placeholder="Enter your Student ID" maxlength="20" autocomplete="off" />
-        </div>
+<div class="section-label">Your information</div>
+<div class="form-group">
+<label class="form-label" for="studentId">Student ID <span class="req">*</span></label>
+<input type="text" id="studentId" placeholder="Enter your Student ID" maxlength="20" autocomplete="off" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+</div>
 
-        <div class="section-label">Issue details</div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="location">Location <span class="req">*</span></label>
-            <select id="location">
-              <option value="">Select location</option>
-              <option>Classroom</option>
-              <option>Restroom</option>
-              <option>Library</option>
-              <option>Laboratory</option>
-              <option>Hallway</option>
-              <option>Canteen</option>
-              <option>Gymnasium</option>
-              <option>Office</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="category">Issue category <span class="req">*</span></label>
-            <select id="category">
-              <option value="">Select category</option>
-              <option>Broken Furniture</option>
-              <option>Electrical Issue</option>
-              <option>Plumbing</option>
-              <option>Lighting</option>
-              <option>Damaged Door/Window</option>
-              <option>Pest/Sanitation</option>
-              <option>Other</option>
-            </select>
-          </div>
-        </div>
+<div class="section-label">Issue details</div>
+<div class="form-row">
+<div class="form-group">
+<label class="form-label" for="location">Location <span class="req">*</span></label>
+<select id="location">
+<option value="">Select location</option>
+<option>Classroom</option>
+<option>Restroom</option>
+<option>Library</option>
+<option>Laboratory</option>
+<option>Hallway</option>
+<option>Canteen</option>
+<option>Gymnasium</option>
+<option>Office</option>
+<option>Other</option>
+</select>
+</div>
+<div class="form-group">
+<label class="form-label" for="category">Issue category <span class="req">*</span></label>
+<select id="category">
+<option value="">Select category</option>
+<option>Broken Furniture</option>
+<option>Electrical Issue</option>
+<option>Plumbing</option>
+<option>Lighting</option>
+<option>Damaged Door/Window</option>
+<option>Pest/Sanitation</option>
+<option>Other</option>
+</select>
+</div>
+</div>
 
-        <div class="form-group">
-          <label class="form-label" for="description">Description <span class="req">*</span></label>
-          <textarea id="description" rows="4" placeholder="Describe the issue in detail — what is broken, where exactly, and how severe it is. (minimum 50 characters)"></textarea>
-          <div class="char-bar" id="char-counter">0 / 500</div>
-        </div>
+<div class="form-group">
+<label class="form-label" for="description">Description <span class="req">*</span></label>
+<textarea id="description" rows="4" placeholder="Describe the issue in detail — what is broken, where exactly, and how severe it is. (minimum 50 characters)"></textarea>
+<div class="char-bar" id="char-counter">0 / 500</div>
+</div>
 
-        <div class="section-label">Photos <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></div>
-        <div class="form-group">
-          <div class="photo-zone" id="photo-zone">
-            <input type="file" id="photo-input" accept="image/*" multiple />
-            <span class="zone-icon">📷</span>
-            <div class="zone-title">Click or tap to attach photos</div>
-            <div class="zone-hint">JPG, PNG, WEBP · Max 3 photos · Compressed automatically</div>
-          </div>
-          <div class="preview-grid" id="preview-grid"></div>
-        </div>
+<div class="section-label">Photos <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></div>
+<div class="form-group">
+<div class="photo-zone" id="photo-zone">
+<input type="file" id="photo-input" accept="image/*" multiple />
+<span class="zone-icon">📷</span>
+<div class="zone-title">Click or tap to attach photos</div>
+<div class="zone-hint">JPG, PNG, WEBP · Max 3 photos · Compressed automatically</div>
+</div>
+<div class="preview-grid" id="preview-grid"></div>
+</div>
 
-        <button type="submit" class="submit-btn" id="submit-btn">
-          Submit report
-        </button>
+<button type="submit" class="submit-btn" id="submit-btn">
+Submit report
+</button>
 
-      </form>
-    </div>
-  </div>
+</form>
+</div>
+</div>
+
 </div>
 
 <script type="module">
@@ -240,11 +232,11 @@ import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/fir
 
 // ── CHARACTER COUNTER ──
 const descField = document.getElementById('description');
-const charBar   = document.getElementById('char-counter');
+const charBar = document.getElementById('char-counter');
 function updateCounter() {
-  const len = descField.value.length;
-  charBar.textContent = len + ' / 500';
-  charBar.style.color = (len < 50 || len > 500) ? '#e53e3e' : '#94a3b8';
+const len = descField.value.length;
+charBar.textContent = len + ' / 500';
+charBar.style.color = (len < 50 || len > 500) ? '#e53e3e' : '#94a3b8';
 }
 updateCounter();
 descField.addEventListener('input', updateCounter);
@@ -256,146 +248,144 @@ const previewGrid = document.getElementById('preview-grid');
 const photoZone = document.getElementById('photo-zone');
 
 function readFileAsDataURL(file) {
-  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
+return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
 }
 
 function getExifOrientation(buffer) {
-  const v = new DataView(buffer);
-  if (v.getUint16(0, false) !== 0xFFD8) return 1;
-  let o = 2;
-  while (o < v.byteLength) {
-    const m = v.getUint16(o, false); o += 2;
-    if (m === 0xFFE1) {
-      if (v.getUint32(o + 2, false) !== 0x45786966) return 1;
-      const l = v.getUint16(o + 8, false) === 0x4949;
-      const ifd = o + 8 + v.getUint32(o + 12, l);
-      const tags = v.getUint16(ifd, l);
-      for (let i = 0; i < tags; i++) if (v.getUint16(ifd + 2 + i*12, l) === 0x0112) return v.getUint16(ifd + 2 + i*12 + 8, l);
-      return 1;
-    }
-    if ((m & 0xFF00) !== 0xFF00) break;
-    o += v.getUint16(o, false);
-  }
-  return 1;
+const v = new DataView(buffer);
+if (v.getUint16(0, false) !== 0xFFD8) return 1;
+let o = 2;
+while (o < v.byteLength) {
+const m = v.getUint16(o, false); o += 2;
+if (m === 0xFFE1) {
+if (v.getUint32(o + 2, false) !== 0x45786966) return 1;
+const l = v.getUint16(o + 8, false) === 0x4949;
+const ifd = o + 8 + v.getUint32(o + 12, l);
+const tags = v.getUint16(ifd, l);
+for (let i = 0; i < tags; i++) if (v.getUint16(ifd + 2 + i*12, l) === 0x0112) return v.getUint16(ifd + 2 + i*12 + 8, l);
+return 1;
+}
+if ((m & 0xFF00) !== 0xFF00) break;
+o += v.getUint16(o, false);
+}
+return 1;
 }
 
 async function compressImage(file) {
-  const [buf, dataURL] = await Promise.all([file.arrayBuffer(), readFileAsDataURL(file)]);
-  const ori = getExifOrientation(buf);
-  const img = await new Promise((res, rej) => { const el = new Image(); el.onload = () => res(el); el.onerror = rej; el.src = dataURL; });
-  let { naturalWidth: w, naturalHeight: h } = img;
-  const swapped = ori >= 5 && ori <= 8;
-  const lw = swapped ? h : w, lh = swapped ? w : h;
-  const MAX = 1600;
-  const scale = Math.max(lw, lh) > MAX ? MAX / Math.max(lw, lh) : 1;
-  const dw = Math.round(lw * scale), dh = Math.round(lh * scale);
-  const canvas = document.createElement('canvas');
-  canvas.width = dw; canvas.height = dh;
-  const ctx = canvas.getContext('2d');
-  ctx.save();
-  switch(ori){case 2:ctx.transform(-1,0,0,1,dw,0);break;case 3:ctx.transform(-1,0,0,-1,dw,dh);break;case 4:ctx.transform(1,0,0,-1,0,dh);break;case 5:ctx.transform(0,1,1,0,0,0);break;case 6:ctx.transform(0,1,-1,0,dh,0);break;case 7:ctx.transform(0,-1,-1,0,dh,dw);break;case 8:ctx.transform(0,-1,1,0,0,dw);break;}
-  swapped ? ctx.drawImage(img,0,0,Math.round(h*scale),Math.round(w*scale)) : ctx.drawImage(img,0,0,dw,dh);
-  ctx.restore();
-  return canvas.toDataURL('image/jpeg', 0.82);
+const [buf, dataURL] = await Promise.all([file.arrayBuffer(), readFileAsDataURL(file)]);
+const ori = getExifOrientation(buf);
+const img = await new Promise((res, rej) => { const el = new Image(); el.onload = () => res(el); el.onerror = rej; el.src = dataURL; });
+let { naturalWidth: w, naturalHeight: h } = img;
+const swapped = ori >= 5 && ori <= 8;
+const lw = swapped ? h : w, lh = swapped ? w : h;
+const MAX = 1600;
+const scale = Math.max(lw, lh) > MAX ? MAX / Math.max(lw, lh) : 1;
+const dw = Math.round(lw * scale), dh = Math.round(lh * scale);
+const canvas = document.createElement('canvas');
+canvas.width = dw; canvas.height = dh;
+const ctx = canvas.getContext('2d');
+ctx.save();
+switch(ori){case 2:ctx.transform(-1,0,0,1,dw,0);break;case 3:ctx.transform(-1,0,0,-1,dw,dh);break;case 4:ctx.transform(1,0,0,-1,0,dh);break;case 5:ctx.transform(0,1,1,0,0,0);break;case 6:ctx.transform(0,1,-1,0,dh,0);break;case 7:ctx.transform(0,-1,-1,0,dh,dw);break;case 8:ctx.transform(0,-1,1,0,0,dw);break;}
+swapped ? ctx.drawImage(img,0,0,Math.round(h*scale),Math.round(w*scale)) : ctx.drawImage(img,0,0,dw,dh);
+ctx.restore();
+return canvas.toDataURL('image/jpeg', 0.82);
 }
 
 photoInput?.addEventListener('change', async (e) => {
-  const files = [...e.target.files].slice(0, 3 - selectedPhotos.length);
-  for (const file of files) {
-    if (selectedPhotos.length >= 3) break;
-    try {
-      const data = await compressImage(file);
-      selectedPhotos.push(data);
-      const idx = selectedPhotos.length - 1;
-      const div = document.createElement('div');
-      div.className = 'preview-item';
-      div.innerHTML = `<img src="${data}" alt="Preview"><button type="button" title="Remove">✕</button>`;
-      div.querySelector('button').onclick = () => { selectedPhotos.splice(idx, 1); div.remove(); if(selectedPhotos.length < 3) photoZone.style.display = ''; };
-      previewGrid.appendChild(div);
-      if (selectedPhotos.length >= 3) photoZone.style.display = 'none';
-    } catch(err) { alert('Could not process "' + file.name + '". Try a different image.'); }
-  }
-  photoInput.value = '';
+const files = [...e.target.files].slice(0, 3 - selectedPhotos.length);
+for (const file of files) {
+if (selectedPhotos.length >= 3) break;
+try {
+const data = await compressImage(file);
+selectedPhotos.push(data);
+const idx = selectedPhotos.length - 1;
+const div = document.createElement('div');
+div.className = 'preview-item';
+div.innerHTML = `<img src="${data}" alt="Preview"><button type="button" title="Remove">✕</button>`;
+div.querySelector('button').onclick = () => { selectedPhotos.splice(idx, 1); div.remove(); if(selectedPhotos.length < 3) photoZone.style.display = ''; };
+previewGrid.appendChild(div);
+if (selectedPhotos.length >= 3) photoZone.style.display = 'none';
+} catch(err) { alert('Could not process "' + file.name + '". Try a different image.'); }
+}
+photoInput.value = '';
 });
 
 // ── DRAFT ──
 function saveDraft() {
-  localStorage.setItem('reportDraft', JSON.stringify({
-    studentId: document.getElementById('studentId').value,
-    location:  document.getElementById('location').value,
-    category:  document.getElementById('category').value,
-    description: document.getElementById('description').value
-  }));
+localStorage.setItem('reportDraft', JSON.stringify({
+studentId: document.getElementById('studentId').value,
+location: document.getElementById('location').value,
+category: document.getElementById('category').value,
+description: document.getElementById('description').value
+}));
 }
-
 const draft = JSON.parse(localStorage.getItem('reportDraft') || 'null');
 if (draft && (draft.studentId || draft.description)) {
-  document.getElementById('studentId').value  = draft.studentId  || '';
-  document.getElementById('location').value   = draft.location   || '';
-  document.getElementById('category').value   = draft.category   || '';
-  document.getElementById('description').value= draft.description|| '';
-  updateCounter();
-  const banner = document.getElementById('draft-banner');
-  banner.style.display = 'flex';
-  setTimeout(() => banner.style.opacity = '0', 3000);
-  setTimeout(() => banner.style.display = 'none', 3400);
+document.getElementById('studentId').value = draft.studentId || '';
+document.getElementById('location').value = draft.location || '';
+document.getElementById('category').value = draft.category || '';
+document.getElementById('description').value= draft.description|| '';
+updateCounter();
+const banner = document.getElementById('draft-banner');
+banner.style.display = 'flex';
+setTimeout(() => banner.style.opacity = '0', 3000);
+setTimeout(() => banner.style.display = 'none', 3400);
 }
-
 ['studentId','location','category','description'].forEach(id => {
-  document.getElementById(id)?.addEventListener('input',  saveDraft);
-  document.getElementById(id)?.addEventListener('change', saveDraft);
+document.getElementById(id)?.addEventListener('input', saveDraft);
+document.getElementById(id)?.addEventListener('change', saveDraft);
 });
 
 // ── SUBMIT ──
 document.getElementById('report-form').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const errBox = document.getElementById('error-box');
-  errBox.style.display = 'none';
+e.preventDefault();
+const errBox = document.getElementById('error-box');
+errBox.style.display = 'none';
 
-  const studentId   = document.getElementById('studentId').value.trim();
-  const location    = document.getElementById('location').value;
-  const category    = document.getElementById('category').value;
-  const description = document.getElementById('description').value.trim();
+const studentId = document.getElementById('studentId').value.trim();
+const location = document.getElementById('location').value;
+const category = document.getElementById('category').value;
+const description = document.getElementById('description').value.trim();
 
-  const errors = [];
-  if (!studentId)                errors.push('Student ID is required.');
-  if (!location)                 errors.push('Please select a location.');
-  if (!category)                 errors.push('Please select an issue category.');
-  if (description.length < 50)   errors.push('Description must be at least 50 characters.');
-  if (description.length > 500)  errors.push('Description must not exceed 500 characters.');
+const errors = [];
+if (!studentId) errors.push('Student ID is required.');
+else if (!/^\d+$/.test(studentId)) errors.push('Student ID must contain numbers only.');
+if (!location) errors.push('Please select a location.');
+if (!category) errors.push('Please select an issue category.');
+if (description.length < 50) errors.push('Description must be at least 50 characters.');
+if (description.length > 500) errors.push('Description must not exceed 500 characters.');
 
-  if (errors.length) {
-    errBox.innerHTML = '<strong>Please fix the following:</strong><ul>' + errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
-    errBox.style.display = 'block';
-    errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return;
-  }
+if (errors.length) {
+errBox.innerHTML = '<strong>Please fix the following:</strong><ul>' + errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
+errBox.style.display = 'block';
+errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+return;
+}
 
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Submitting your report…';
+const btn = document.getElementById('submit-btn');
+btn.disabled = true;
+btn.innerHTML = '<span class="spinner"></span>Submitting your report…';
 
-  try {
-    const docRef = await addDoc(collection(db, 'reports'), {
-      studentId, location, category, description,
-      status: 'Pending',
-      photos: selectedPhotos,
-      createdAt: serverTimestamp()
-    });
-
-    localStorage.removeItem('reportDraft');
-    document.getElementById('form-section').style.display = 'none';
-    document.getElementById('success-report-id').textContent = docRef.id.slice(0, 12).toUpperCase();
-    document.getElementById('success-card').style.display = 'block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-  } catch (err) {
-    console.error(err);
-    errBox.innerHTML = '<strong>Submission failed.</strong> ' + (err?.message || 'Please check your connection and try again.');
-    errBox.style.display = 'block';
-    btn.disabled = false;
-    btn.textContent = 'Submit report';
-  }
+try {
+const docRef = await addDoc(collection(db, 'reports'), {
+studentId, location, category, description,
+status: 'Pending',
+history: [{ status: 'Pending', time: new Date().toLocaleString('en-PH') }],
+photos: selectedPhotos,
+createdAt: serverTimestamp()
+});
+localStorage.removeItem('reportDraft');
+document.getElementById('form-section').style.display = 'none';
+document.getElementById('success-report-id').textContent = docRef.id.slice(0, 12).toUpperCase();
+document.getElementById('success-card').style.display = 'block';
+window.scrollTo({ top: 0, behavior: 'smooth' });
+} catch (err) {
+console.error(err);
+errBox.innerHTML = '<strong>Submission failed.</strong> ' + (err?.message || 'Please check your connection and try again.');
+errBox.style.display = 'block';
+btn.disabled = false;
+btn.textContent = 'Submit report';
+}
 });
 </script>
 
