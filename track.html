@@ -1,337 +1,331 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Track Report — SHS-AdC</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="icon" href="assets/favicon.png" type="image/png" />
-  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
-  <style>
-    .track-hero {
-      background: linear-gradient(160deg, rgba(7,41,77,0.92) 0%, rgba(5,30,56,0.97) 100%), url('assets/hero.jpg');
-      background-size: cover; background-position: center;
-      color: #fff; padding: 72px 24px 56px; text-align: center;
-    }
-    .track-hero h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; letter-spacing:-0.03em; }
-    .track-hero p  { color: rgba(255,255,255,0.72); font-size: 14px; max-width:480px; margin:0 auto; }
-
-    .track-wrap { max-width: 660px; margin: 0 auto; padding: 40px 20px 60px; }
-
-    .search-card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 28px;
-      box-shadow: var(--shadow-lg);
-      border: 1px solid rgba(7,41,77,0.06);
-      margin-bottom: 24px;
-    }
-
-    .search-row { display: flex; gap: 10px; }
-    .search-row input { flex: 1; font-size: 14px; font-family: 'Courier New', monospace; letter-spacing: 0.05em; }
-    .search-row input::placeholder { font-family: inherit; letter-spacing: 0; }
-    .track-btn {
-      padding: 10px 22px;
-      background: var(--navy);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.18s;
-      font-family: inherit;
-    }
-    .track-btn:hover { background: #0a3b6d; }
-
-    .hint-text { font-size: 12px; color: #94a3b8; margin-top: 8px; }
-
-    /* RESULT CARD */
-    .result-card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 28px;
-      box-shadow: var(--shadow-lg);
-      border: 1px solid rgba(7,41,77,0.06);
-      animation: cardSlideIn 0.35s cubic-bezier(0.22,1,0.36,1) both;
-    }
-
-    .result-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .result-title { font-size: 17px; font-weight: 800; color: var(--navy); }
-    .result-id    { font-size: 11px; font-family: monospace; color: var(--muted); letter-spacing: 0.05em; margin-top: 2px; }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .info-box {
-      background: #f8fafc;
-      border: 1px solid rgba(7,41,77,0.06);
-      border-radius: 10px;
-      padding: 12px 14px;
-    }
-    .info-box .lbl { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-    .info-box .val { font-size: 13px; font-weight: 600; color: var(--navy); }
-
-    .section-head { font-size: 13px; font-weight: 700; color: var(--navy); margin: 18px 0 10px; display: flex; align-items: center; gap: 6px; }
-
-    .desc-box {
-      background: #f8fafc;
-      border: 1px solid rgba(7,41,77,0.07);
-      border-radius: 10px;
-      padding: 14px;
-      font-size: 13px;
-      color: #334155;
-      line-height: 1.7;
-      margin-bottom: 18px;
-    }
-
-    /* TIMELINE */
-    .timeline { position: relative; padding-left: 20px; }
-    .timeline::before { content:''; position:absolute; left:5px; top:6px; bottom:6px; width:2px; background:#e2e8f0; border-radius:2px; }
-    .tl-item { position: relative; margin-bottom: 14px; }
-    .tl-dot  { position:absolute; left:-19px; top:3px; width:10px; height:10px; border-radius:50%; background:#e2e8f0; border:2px solid #fff; box-shadow:0 0 0 2px #e2e8f0; }
-    .tl-dot.done   { background: #166534; box-shadow: 0 0 0 2px #bbf7d0; }
-    .tl-dot.active { background: var(--navy); box-shadow: 0 0 0 2px #bfdbfe; }
-    .tl-status { font-size: 13px; font-weight: 600; color: var(--navy); }
-    .tl-time   { font-size: 11px; color: var(--muted); margin-top: 1px; }
-
-    /* RESOLUTION */
-    .resolution-box {
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      border-radius: 10px;
-      padding: 14px;
-      font-size: 13px;
-      color: #166534;
-      line-height: 1.6;
-    }
-    .resolution-empty {
-      color: var(--muted);
-      font-size: 13px;
-      font-style: italic;
-    }
-
-    /* PHOTOS */
-    .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
-    .photo-grid img { width:100%; height:110px; object-fit:cover; border-radius:8px; border:1px solid #e2e8f0; cursor:pointer; transition:transform .15s; }
-    .photo-grid img:hover { transform: scale(1.03); }
-
-    /* ACTION BUTTONS */
-    .result-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(7,41,77,0.07); }
-
-    /* LOADING */
-    .loading-state { text-align: center; padding: 40px 20px; color: var(--muted); }
-    .loading-spinner {
-      display: inline-block;
-      width: 36px; height: 36px;
-      border: 3px solid #e2e8f0;
-      border-top-color: var(--navy);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin-bottom: 14px;
-    }
-
-    /* NOT FOUND */
-    .not-found {
-      text-align: center;
-      padding: 36px 20px;
-      background: #fff;
-      border-radius: 16px;
-      border: 1px solid rgba(7,41,77,0.06);
-      box-shadow: var(--shadow-md);
-    }
-    .not-found .icon { font-size: 40px; margin-bottom: 12px; }
-    .not-found h3  { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
-    .not-found p   { font-size: 13px; color: var(--muted); }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Track Report — SHS-AdC</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="icon" href="assets/favicon.png" type="image/png" />
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+<style>
+.track-hero {
+background: linear-gradient(160deg, rgba(7,41,77,0.92) 0%, rgba(5,30,56,0.97) 100%), url('assets/hero.jpg');
+background-size: cover; background-position: center;
+color: #fff; padding: 72px 24px 56px; text-align: center;
+}
+.track-hero h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; letter-spacing:-0.03em; }
+.track-hero p { color: rgba(255,255,255,0.72); font-size: 14px; max-width:480px; margin:0 auto; }
+.track-wrap { max-width: 660px; margin: 0 auto; padding: 40px 20px 60px; }
+.search-card {
+background: #fff;
+border-radius: 16px;
+padding: 28px;
+box-shadow: var(--shadow-lg);
+border: 1px solid rgba(7,41,77,0.06);
+margin-bottom: 24px;
+}
+.search-row { display: flex; gap: 10px; }
+.search-row input { flex: 1; font-size: 14px; font-family: 'Courier New', monospace; letter-spacing: 0.05em; }
+.search-row input::placeholder { font-family: inherit; letter-spacing: 0; }
+.track-btn {
+padding: 10px 22px;
+background: var(--navy);
+color: #fff;
+border: none;
+border-radius: var(--radius-sm);
+font-size: 14px;
+font-weight: 700;
+cursor: pointer;
+white-space: nowrap;
+transition: all 0.18s;
+font-family: inherit;
+}
+.track-btn:hover { background: #0a3b6d; }
+.hint-text { font-size: 12px; color: #94a3b8; margin-top: 8px; }
+/* RESULT CARD */
+.result-card {
+background: #fff;
+border-radius: 16px;
+padding: 28px;
+box-shadow: var(--shadow-lg);
+border: 1px solid rgba(7,41,77,0.06);
+animation: cardSlideIn 0.35s cubic-bezier(0.22,1,0.36,1) both;
+}
+.result-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 20px;
+flex-wrap: wrap;
+gap: 10px;
+}
+.result-title { font-size: 17px; font-weight: 800; color: var(--navy); }
+.result-id { font-size: 11px; font-family: monospace; color: var(--muted); letter-spacing: 0.05em; margin-top: 2px; }
+.info-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+gap: 10px;
+margin-bottom: 20px;
+}
+.info-box {
+background: #f8fafc;
+border: 1px solid rgba(7,41,77,0.06);
+border-radius: 10px;
+padding: 12px 14px;
+}
+.info-box .lbl { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.info-box .val { font-size: 13px; font-weight: 600; color: var(--navy); }
+.section-head { font-size: 13px; font-weight: 700; color: var(--navy); margin: 18px 0 10px; display: flex; align-items: center; gap: 6px; }
+.desc-box {
+background: #f8fafc;
+border: 1px solid rgba(7,41,77,0.07);
+border-radius: 10px;
+padding: 14px;
+font-size: 13px;
+color: #334155;
+line-height: 1.7;
+margin-bottom: 18px;
+}
+/* TIMELINE */
+.timeline { position: relative; padding-left: 20px; }
+.timeline::before { content:''; position:absolute; left:5px; top:6px; bottom:6px; width:2px; background:#e2e8f0; border-radius:2px; }
+.tl-item { position: relative; margin-bottom: 14px; }
+.tl-dot { position:absolute; left:-19px; top:3px; width:10px; height:10px; border-radius:50%; background:#e2e8f0; border:2px solid #fff; box-shadow:0 0 0 2px #e2e8f0; }
+.tl-dot.done { background: #166534; box-shadow: 0 0 0 2px #bbf7d0; }
+.tl-dot.active { background: var(--navy); box-shadow: 0 0 0 2px #bfdbfe; }
+.tl-status { font-size: 13px; font-weight: 600; color: var(--navy); }
+.tl-time { font-size: 11px; color: var(--muted); margin-top: 1px; }
+/* RESOLUTION */
+.resolution-box {
+background: #f0fdf4;
+border: 1px solid #bbf7d0;
+border-radius: 10px;
+padding: 14px;
+font-size: 13px;
+color: #166534;
+line-height: 1.6;
+}
+.resolution-empty {
+color: var(--muted);
+font-size: 13px;
+font-style: italic;
+}
+/* PHOTOS */
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+.photo-grid img { width:100%; height:110px; object-fit:cover; border-radius:8px; border:1px solid #e2e8f0; cursor:pointer; transition:transform .15s; }
+.photo-grid img:hover { transform: scale(1.03); }
+/* ACTION BUTTONS */
+.result-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(7,41,77,0.07); }
+/* LOADING */
+.loading-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+.loading-spinner {
+display: inline-block;
+width: 36px; height: 36px;
+border: 3px solid #e2e8f0;
+border-top-color: var(--navy);
+border-radius: 50%;
+animation: spin 0.7s linear infinite;
+margin-bottom: 14px;
+}
+/* NOT FOUND */
+.not-found {
+text-align: center;
+padding: 36px 20px;
+background: #fff;
+border-radius: 16px;
+border: 1px solid rgba(7,41,77,0.06);
+box-shadow: var(--shadow-md);
+}
+.not-found .icon { font-size: 40px; margin-bottom: 12px; }
+.not-found h3 { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+.not-found p { font-size: 13px; color: var(--muted); }
+</style>
 </head>
 <body>
-
 <nav>
-  <a class="nav-logo" href="index.html">
-    <img class="crest" src="assets/crest.png" alt="SHS crest" />
-    <div>
-      <div class="school-name">Sacred Heart School</div>
-      <div class="school-sub">Ateneo de Cebu</div>
-    </div>
-  </a>
-  <div class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="report.html">Submit report</a>
-    <a href="track.html" class="active">Track report</a>
-    <a href="admin-login.html">Admin</a>
-  </div>
+<a class="nav-logo" href="index.html">
+<img class="crest" src="assets/crest.png" alt="SHS crest" />
+<div>
+<div class="school-name">Sacred Heart School</div>
+<div class="school-sub">Ateneo de Cebu</div>
+</div>
+</a>
+<div class="nav-links">
+<a href="index.html">Home</a>
+<a href="report.html">Submit report</a>
+<a href="track.html" class="active">Track report</a>
+<a href="admin-login.html">Admin</a>
+</div>
 </nav>
 
 <div class="track-hero">
-  <h1>Track Your Report</h1>
-  <p>Enter your Report ID to check the current status and progress of your maintenance request.</p>
+<h1>Track Your Report</h1>
+<p>Enter your Report ID to check the current status and progress of your maintenance request.</p>
 </div>
 
 <div class="track-wrap">
-  <div class="search-card">
-    <div class="search-row">
-      <input type="text" id="reportId" placeholder="Enter Report ID (e.g. 6A3F8D219B2C)" maxlength="12" />
-      <button class="track-btn" onclick="trackReport()">🔍 Track</button>
-    </div>
-    <p class="hint-text">Your Report ID was shown after you submitted your report. It's 12 characters long.</p>
-  </div>
+<div class="search-card">
+<div class="search-row">
+<input type="text" id="reportId" placeholder="Enter Report ID (e.g. 6A3F8D219B2C)" maxlength="12" />
+<button class="track-btn" onclick="trackReport()">🔍 Track</button>
+</div>
+<p class="hint-text">Your Report ID was shown after you submitted your report. It's 12 characters long.</p>
+</div>
 
-  <div id="result"></div>
+<div id="result"></div>
 </div>
 
 <script type="module">
-  import { db } from "./firebase.js";
-  import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { db } from "./firebase.js";
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const input = document.getElementById('reportId');
+const input = document.getElementById('reportId');
+input.addEventListener('keydown', e => { if (e.key === 'Enter') trackReport(); });
 
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') trackReport(); });
+// Auto-uppercase as user types
+input.addEventListener('input', () => { const p = input.selectionStart; input.value = input.value.toUpperCase(); input.setSelectionRange(p, p); });
 
-  // Auto-uppercase as user types
-  input.addEventListener('input', () => { const p = input.selectionStart; input.value = input.value.toUpperCase(); input.setSelectionRange(p, p); });
+function esc(str) {
+return String(str||'').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[s]);
+}
 
-  function esc(str) {
-    return String(str||'').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[s]);
-  }
+function badgeClass(s) {
+if (!s) return 'badge-pending';
+const k = s.toLowerCase();
+if (k.includes('progress')) return 'badge-progress';
+if (k.includes('resolved')) return 'badge-resolved';
+if (k.includes('reject')) return 'badge-rejected';
+return 'badge-pending';
+}
 
-  function badgeClass(s) {
-    if (!s) return 'badge-pending';
-    const k = s.toLowerCase();
-    if (k.includes('progress')) return 'badge-progress';
-    if (k.includes('resolved')) return 'badge-resolved';
-    if (k.includes('reject'))   return 'badge-rejected';
-    return 'badge-pending';
-  }
+// Ensures the timeline always starts with a "Pending" entry, even for
+// older report docs whose history array was created before that step
+// was recorded. If history is missing a Pending entry, one is
+// synthesized from the report's createdAt timestamp so the full
+// journey (Pending → ... ) is always shown.
+function buildTimeline(d) {
+const history = Array.isArray(d.history) ? [...d.history] : [];
+const hasPending = history.some(h => h.status === 'Pending');
 
-  window.trackReport = async function() {
-    const id = input.value.trim().toUpperCase();
-    const result = document.getElementById('result');
+if (!hasPending) {
+const time = d.createdAt?.toDate
+? d.createdAt.toDate().toLocaleString('en-PH')
+: 'Submitted';
+history.unshift({ status: 'Pending', time });
+}
 
-    if (!id) {
-      result.innerHTML = `<div class="not-found"><div class="icon">💬</div><h3>Enter your Report ID</h3><p>Type your 12-character Report ID above and click Track.</p></div>`;
-      return;
-    }
+return history;
+}
 
-    result.innerHTML = `
-      <div class="loading-state">
-        <div class="loading-spinner"></div>
-        <p style="font-size:14px;font-weight:500;">Searching for your report…</p>
-      </div>`;
+window.trackReport = async function() {
+const id = input.value.trim().toUpperCase();
+const result = document.getElementById('result');
 
-    try {
-      const snapshot = await getDocs(collection(db, "reports"));
-      let found = false;
+if (!id) {
+result.innerHTML = `<div class="not-found"><div class="icon">💬</div><h3>Enter your Report ID</h3><p>Type your 12-character Report ID above and click Track.</p></div>`;
+return;
+}
 
-      snapshot.forEach(doc => {
-        if (found) return;
-        if (doc.id.slice(0, 12).toUpperCase() !== id) return;
-        found = true;
+result.innerHTML = `
+<div class="loading-state">
+<div class="loading-spinner"></div>
+<p style="font-size:14px;font-weight:500;">Searching for your report…</p>
+</div>`;
 
-        const d = doc.data();
-        const bc = badgeClass(d.status);
-        const dateStr = d.createdAt?.toDate ? d.createdAt.toDate().toLocaleString('en-PH', { dateStyle:'medium', timeStyle:'short' }) : 'Unknown';
+try {
+const snapshot = await getDocs(collection(db, "reports"));
+let found = false;
 
-        const statuses = ['Pending', 'In Progress', 'Resolved'];
-        const curIdx = d.status === 'Rejected' ? -1 : statuses.indexOf(d.status);
+snapshot.forEach(doc => {
+if (found) return;
+if (doc.id.slice(0, 12).toUpperCase() !== id) return;
+found = true;
 
-        let timelineHtml = '';
-        if (d.history && d.history.length > 0) {
-          timelineHtml = d.history.map((h, i) => {
-            const isDone   = i < d.history.length - 1;
-            const isActive = i === d.history.length - 1;
-            return `<div class="tl-item">
-              <div class="tl-dot ${isDone?'done':isActive?'active':''}"></div>
-              <div class="tl-status">${esc(h.status)}</div>
-              <div class="tl-time">${esc(h.time)}</div>
-            </div>`;
-          }).join('');
-        } else {
-          timelineHtml = `<div class="tl-item"><div class="tl-dot active"></div><div class="tl-status">Pending</div><div class="tl-time">Awaiting admin review</div></div>`;
-        }
+const d = doc.data();
+const bc = badgeClass(d.status);
+const dateStr = d.createdAt?.toDate ? d.createdAt.toDate().toLocaleString('en-PH', { dateStyle:'medium', timeStyle:'short' }) : 'Unknown';
 
-        const resolutionHtml = d.resolution
-          ? `<div class="resolution-box">✅ ${esc(d.resolution)}</div>`
-          : `<p class="resolution-empty">No resolution notes yet — check back soon.</p>`;
+const timelineEntries = buildTimeline(d);
 
-        const photosHtml = d.photos?.length
-          ? `<div class="section-head">📸 Photos</div>
-             <div class="photo-grid">${d.photos.map(p => `<img src="${p.url||p.data||p}" alt="Report photo">`).join('')}</div>`
-          : '';
+const timelineHtml = timelineEntries.map((h, i) => {
+const isDone = i < timelineEntries.length - 1;
+const isActive = i === timelineEntries.length - 1;
+return `<div class="tl-item">
+<div class="tl-dot ${isDone?'done':isActive?'active':''}"></div>
+<div class="tl-status">${esc(h.status)}</div>
+<div class="tl-time">${esc(h.time)}</div>
+</div>`;
+}).join('');
 
-        result.innerHTML = `
-          <div class="result-card">
-            <div class="result-header">
-              <div>
-                <div class="result-title">${esc(d.category||'Facility Report')}</div>
-                <div class="result-id">ID: ${id}</div>
-              </div>
-              <span class="badge ${bc}">${esc(d.status||'Pending')}</span>
-            </div>
+const resolutionHtml = d.resolution
+? `<div class="resolution-box">✅ ${esc(d.resolution)}</div>`
+: `<p class="resolution-empty">No resolution notes yet — check back soon.</p>`;
 
-            <div class="info-grid">
-              <div class="info-box"><div class="lbl">Location</div><div class="val">${esc(d.location||'N/A')}</div></div>
-              <div class="info-box"><div class="lbl">Category</div><div class="val">${esc(d.category||'N/A')}</div></div>
-              <div class="info-box"><div class="lbl">Student ID</div><div class="val">${esc(d.studentId||'N/A')}</div></div>
-              <div class="info-box"><div class="lbl">Submitted</div><div class="val">${dateStr}</div></div>
-            </div>
+const photosHtml = d.photos?.length
+? `<div class="section-head">📸 Photos</div>
+<div class="photo-grid">${d.photos.map(p => `<img src="${p.url||p.data||p}" alt="Report photo">`).join('')}</div>`
+: '';
 
-            <div class="section-head">📋 Description</div>
-            <div class="desc-box">${esc(d.description||'No description provided.')}</div>
+result.innerHTML = `
+<div class="result-card">
+<div class="result-header">
+<div>
+<div class="result-title">${esc(d.category||'Facility Report')}</div>
+<div class="result-id">ID: ${id}</div>
+</div>
+<span class="badge ${bc}">${esc(d.status||'Pending')}</span>
+</div>
 
-            <div class="section-head">🕓 Status timeline</div>
-            <div class="timeline">${timelineHtml}</div>
+<div class="info-grid">
+<div class="info-box"><div class="lbl">Location</div><div class="val">${esc(d.location||'N/A')}</div></div>
+<div class="info-box"><div class="lbl">Category</div><div class="val">${esc(d.category||'N/A')}</div></div>
+<div class="info-box"><div class="lbl">Student ID</div><div class="val">${esc(d.studentId||'N/A')}</div></div>
+<div class="info-box"><div class="lbl">Submitted</div><div class="val">${dateStr}</div></div>
+</div>
 
-            <div class="section-head" style="margin-top:20px;">📝 Resolution notes</div>
-            ${resolutionHtml}
+<div class="section-head">📋 Description</div>
+<div class="desc-box">${esc(d.description||'No description provided.')}</div>
 
-            ${photosHtml}
+<div class="section-head">🕓 Status timeline</div>
+<div class="timeline">${timelineHtml}</div>
 
-            <div class="result-actions">
-              <button class="btn btn-primary" id="copy-btn"
-                onclick="navigator.clipboard.writeText('${id}').then(()=>{ const b=document.getElementById('copy-btn'); b.textContent='✓ Copied!'; setTimeout(()=>b.textContent='Copy Report ID',2000); })">
-                Copy Report ID
-              </button>
-              <button class="btn btn-outline"
-                onclick="document.getElementById('result').innerHTML='';document.getElementById('reportId').value='';document.getElementById('reportId').focus();">
-                Search another
-              </button>
-            </div>
-          </div>`;
-      });
+<div class="section-head" style="margin-top:20px;">📝 Resolution notes</div>
+${resolutionHtml}
 
-      if (!found) {
-        result.innerHTML = `
-          <div class="not-found">
-            <div class="icon">🔍</div>
-            <h3>Report not found</h3>
-            <p>No report matches "<strong>${esc(id)}</strong>". Please double-check your Report ID and try again.</p>
-          </div>`;
-      }
+${photosHtml}
 
-    } catch(err) {
-      console.error(err);
-      result.innerHTML = `
-        <div class="not-found">
-          <div class="icon">⚠️</div>
-          <h3>Connection error</h3>
-          <p>Something went wrong. Please check your internet connection and try again.</p>
-        </div>`;
-    }
-  };
+<div class="result-actions">
+<button class="btn btn-primary" id="copy-btn"
+onclick="navigator.clipboard.writeText('${id}').then(()=>{ const b=document.getElementById('copy-btn'); b.textContent='✓ Copied!'; setTimeout(()=>b.textContent='Copy Report ID',2000); })">
+Copy Report ID
+</button>
+<button class="btn btn-outline"
+onclick="document.getElementById('result').innerHTML='';document.getElementById('reportId').value='';document.getElementById('reportId').focus();">
+Search another
+</button>
+</div>
+</div>`;
+});
+
+if (!found) {
+result.innerHTML = `
+<div class="not-found">
+<div class="icon">🔍</div>
+<h3>Report not found</h3>
+<p>No report matches "<strong>${esc(id)}</strong>". Please double-check your Report ID and try again.</p>
+</div>`;
+}
+
+} catch(err) {
+console.error(err);
+result.innerHTML = `
+<div class="not-found">
+<div class="icon">⚠️</div>
+<h3>Connection error</h3>
+<p>Something went wrong. Please check your internet connection and try again.</p>
+</div>`;
+}
+};
 </script>
 
 <script src="ui.js"></script>
