@@ -208,10 +208,10 @@ gap: 8px;
 <div class="section-label">Photos <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></div>
 <div class="form-group">
 <div class="photo-zone" id="photo-zone">
-<input type="file" id="photo-input" accept="image/*" multiple />
+<input type="file" id="photo-input" accept="image/*" capture="environment" />
 <span class="zone-icon">📷</span>
-<div class="zone-title">Click or tap to attach photos</div>
-<div class="zone-hint">JPG, PNG, WEBP · Max 3 photos · Compressed automatically</div>
+<div class="zone-title">Tap to take a photo</div>
+<div class="zone-hint">Camera only · Max 3 photos · Compressed automatically</div>
 </div>
 <div class="preview-grid" id="preview-grid"></div>
 </div>
@@ -278,7 +278,7 @@ const img = await new Promise((res, rej) => { const el = new Image(); el.onload 
 let { naturalWidth: w, naturalHeight: h } = img;
 const swapped = ori >= 5 && ori <= 8;
 const lw = swapped ? h : w, lh = swapped ? w : h;
-const MAX = 1600;
+const MAX = 1200;
 const scale = Math.max(lw, lh) > MAX ? MAX / Math.max(lw, lh) : 1;
 const dw = Math.round(lw * scale), dh = Math.round(lh * scale);
 const canvas = document.createElement('canvas');
@@ -288,7 +288,7 @@ ctx.save();
 switch(ori){case 2:ctx.transform(-1,0,0,1,dw,0);break;case 3:ctx.transform(-1,0,0,-1,dw,dh);break;case 4:ctx.transform(1,0,0,-1,0,dh);break;case 5:ctx.transform(0,1,1,0,0,0);break;case 6:ctx.transform(0,1,-1,0,dh,0);break;case 7:ctx.transform(0,-1,-1,0,dh,dw);break;case 8:ctx.transform(0,-1,1,0,0,dw);break;}
 swapped ? ctx.drawImage(img,0,0,Math.round(h*scale),Math.round(w*scale)) : ctx.drawImage(img,0,0,dw,dh);
 ctx.restore();
-return canvas.toDataURL('image/jpeg', 0.82);
+return canvas.toDataURL('image/jpeg', 0.65);
 }
 
 photoInput?.addEventListener('change', async (e) => {

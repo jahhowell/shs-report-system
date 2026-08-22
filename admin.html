@@ -747,12 +747,46 @@
         } catch(e) { console.error(e); alert('Failed to save notes: ' + e.message); }
     };
 
+    // Custom confirm modal (native window.confirm() is silently blocked or
+    // auto-dismissed by some in-app/mobile browsers, which made delete look
+    // like it "did nothing"). This uses a real DOM modal instead so it works
+    // consistently everywhere.
+    function showConfirmModal(message) {
+        return new Promise((resolve) => {
+            let modal = document.getElementById('customConfirmModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'customConfirmModal';
+                modal.style.cssText = 'position:fixed;inset:0;background:rgba(7,41,77,0.45);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;';
+                modal.innerHTML = `
+                    <div style="background:#fff;border-radius:14px;padding:24px;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                        <div id="customConfirmMsg" style="font-size:14px;color:#07294d;margin-bottom:18px;line-height:1.5;font-weight:600;"></div>
+                        <div style="display:flex;gap:10px;justify-content:flex-end;">
+                            <button id="customConfirmCancel" style="padding:9px 16px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#334155;font-size:13px;font-weight:600;cursor:pointer;">Cancel</button>
+                            <button id="customConfirmOk" style="padding:9px 16px;border-radius:8px;border:none;background:#dc2626;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Delete</button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(modal);
+            }
+            document.getElementById('customConfirmMsg').textContent = message;
+            modal.style.display = 'flex';
+            const cleanup = (result) => { modal.style.display = 'none'; resolve(result); };
+            document.getElementById('customConfirmOk').onclick = () => cleanup(true);
+            document.getElementById('customConfirmCancel').onclick = () => cleanup(false);
+            modal.onclick = (e) => { if (e.target === modal) cleanup(false); };
+        });
+    }
+
     window.deleteReport = async (id) => {
-        if (!confirm('Delete this report permanently? This cannot be undone.')) return;
+        const ok = await showConfirmModal('Delete this report permanently? This cannot be undone.');
+        if (!ok) return;
         try {
             await window._deleteDoc(window._doc(window._db, 'reports', id));
             await fetchAndRender();
-        } catch(e) { alert('Failed to delete report.'); console.error(e); }
+        } catch(e) {
+            console.error(e);
+            alert('Failed to delete report: ' + (e?.message || e?.code || 'Unknown error') + '\n\nIf this says "permission-denied", your Firestore security rules need to allow deletes.');
+        }
     };
 
     window.signOut = function() {
