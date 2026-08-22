@@ -580,9 +580,17 @@
 
     // ---- JUMP TO REPORT ----
     window.jumpToReport = function(id) {
-        // Switch to Reports page, Active tab
+        // Switch to Reports page, and to whichever tab actually contains
+        // this report's status — previously this always forced the
+        // "Active" tab, so clicking a Resolved/Rejected report from the
+        // dashboard silently did nothing (the card wasn't in that tab).
+        const row = allRows.find(r => r.id === id);
+        const status = row?.data?.status;
+        const targetTab = status === 'Resolved' ? 'resolved'
+                         : status === 'Rejected' ? 'rejected'
+                         : 'active';
         goToPage('reports');
-        setTab('active');
+        setTab(targetTab);
         // Wait for render then scroll to and highlight the card
         setTimeout(() => {
             const card = document.getElementById('rc-' + id);
@@ -648,6 +656,16 @@
     // ---- SHARED CARD RENDERER ----
     function renderRows(rows, targetId, mode) {
         const el = document.getElementById(targetId);
+
+        // Preserve any unsaved, currently-typed resolution notes before we
+        // wipe the list's HTML. Auto-refresh re-renders this list every 15s,
+        // which previously erased anything the admin was mid-typing.
+        const draftNotes = {};
+        el.querySelectorAll('textarea.resolution-area').forEach(ta => {
+            const id = ta.id.replace('resolution-', '');
+            draftNotes[id] = ta.value;
+        });
+
         if (!rows.length) {
             const msgs = {
                 active:   'No active reports right now. 🎉',
@@ -722,6 +740,13 @@
                 </details>` : ''}
             </div>`;
         }).join('');
+
+        // Restore any drafts we captured above so unsaved typing survives
+        // the auto-refresh re-render.
+        Object.keys(draftNotes).forEach(id => {
+            const ta = document.getElementById('resolution-' + id);
+            if (ta && draftNotes[id]) ta.value = draftNotes[id];
+        });
     }
 
     // ---- ACTIONS ----
