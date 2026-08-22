@@ -769,8 +769,22 @@
                 document.body.appendChild(modal);
             }
             document.getElementById('customConfirmMsg').textContent = message;
+
+            // Same fix as the image viewer: snap to top before showing the
+            // fixed overlay so it doesn't render above the visible screen.
+            const scrollY = window.scrollY || window.pageYOffset || 0;
+            window.scrollTo(0, 0);
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden';
             modal.style.display = 'flex';
-            const cleanup = (result) => { modal.style.display = 'none'; resolve(result); };
+
+            const cleanup = (result) => {
+                modal.style.display = 'none';
+                document.documentElement.style.overflow = '';
+                document.body.style.overflow = '';
+                window.scrollTo(0, scrollY);
+                resolve(result);
+            };
             document.getElementById('customConfirmOk').onclick = () => cleanup(true);
             document.getElementById('customConfirmCancel').onclick = () => cleanup(false);
             modal.onclick = (e) => { if (e.target === modal) cleanup(false); };
@@ -935,9 +949,15 @@
     }
 
     window.openImageModal = function(src) {
-        const scrollY = window.scrollY;
+        const scrollY = window.scrollY || window.pageYOffset || 0;
         document.body.dataset.scrollY = scrollY;
-        Object.assign(document.body.style, { position:'fixed', top:`-${scrollY}px`, left:'0', right:'0', width:'100%', overflow:'hidden' });
+        // Snap to the top of the page BEFORE showing the fixed overlay.
+        // Some mobile browsers don't reposition `position: fixed` elements
+        // relative to the current scroll offset, so the modal used to render
+        // above the visible area, forcing users to scroll up to see it.
+        window.scrollTo(0, 0);
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden';
         document.getElementById('modalImg').src = src;
         document.getElementById('imageModal').classList.add('active');
         resetViewer();
@@ -951,7 +971,8 @@
         document.getElementById('imageModal').classList.remove('active');
         resetViewer();
         const scrollY = parseInt(document.body.dataset.scrollY || '0', 10);
-        Object.assign(document.body.style, { position:'', top:'', left:'', right:'', width:'', overflow:'' });
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
         window.scrollTo(0, scrollY);
     };
 
